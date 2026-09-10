@@ -44115,6 +44115,1901 @@ setTimeout(initializeServices,1800);
 })();
 </script> body>
 </html>
+<!-- =========================================================
+     NOVA SOCIAL — STORY VIEWER FINAL FIX
+     Paste BEFORE </body>
+     ========================================================= -->
+<style>
+#novaStoryFinalViewer{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:none;
+  background:#050505;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  overflow:hidden;
+  touch-action:none;
+}
+#novaStoryFinalViewer.nsfv-open{
+  display:block;
+}
+#novaStoryFinalViewer .nsfv-bg{
+  position:absolute;
+  inset:0;
+  background:#050505;
+}
+#novaStoryFinalViewer .nsfv-media{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#novaStoryFinalViewer .nsfv-media img,
+#novaStoryFinalViewer .nsfv-media video{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+#novaStoryFinalViewer .nsfv-video{
+  background:#000;
+}
+#novaStoryFinalViewer .nsfv-top{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  z-index:20;
+  padding:
+    calc(env(safe-area-inset-top) + 8px)
+    12px
+    12px;
+  background:linear-gradient(
+    to bottom,
+    rgba(0,0,0,.65),
+    rgba(0,0,0,0)
+  );
+}
+#novaStoryFinalViewer .nsfv-progress{
+  display:flex;
+  gap:4px;
+  width:100%;
+  margin-bottom:12px;
+}
+#novaStoryFinalViewer .nsfv-progress-item{
+  height:3px;
+  flex:1;
+  border-radius:99px;
+  background:rgba(255,255,255,.32);
+  overflow:hidden;
+}
+#novaStoryFinalViewer .nsfv-progress-fill{
+  width:0%;
+  height:100%;
+  background:#fff;
+  border-radius:99px;
+}
+#novaStoryFinalViewer .nsfv-user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+#novaStoryFinalViewer .nsfv-avatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#222;
+  border:1px solid rgba(255,255,255,.35);
+}
+#novaStoryFinalViewer .nsfv-user-info{
+  min-width:0;
+  flex:1;
+}
+#novaStoryFinalViewer .nsfv-name{
+  font-size:14px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#novaStoryFinalViewer .nsfv-time{
+  font-size:11px;
+  opacity:.7;
+  margin-top:2px;
+}
+#novaStoryFinalViewer .nsfv-close{
+  width:40px;
+  height:40px;
+  border:0;
+  background:rgba(0,0,0,.28);
+  color:#fff;
+  border-radius:50%;
+  font-size:25px;
+  line-height:40px;
+  text-align:center;
+  cursor:pointer;
+  flex:none;
+}
+#novaStoryFinalViewer .nsfv-left,
+#novaStoryFinalViewer .nsfv-right{
+  position:absolute;
+  top:70px;
+  bottom:105px;
+  width:38%;
+  z-index:15;
+  border:0;
+  background:transparent;
+}
+#novaStoryFinalViewer .nsfv-left{
+  left:0;
+}
+#novaStoryFinalViewer .nsfv-right{
+  right:0;
+}
+#novaStoryFinalViewer .nsfv-bottom{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:25;
+  padding:
+    10px 12px
+    calc(env(safe-area-inset-bottom) + 12px);
+  background:linear-gradient(
+    to top,
+    rgba(0,0,0,.78),
+    rgba(0,0,0,0)
+  );
+}
+#novaStoryFinalViewer .nsfv-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+#novaStoryFinalViewer .nsfv-reply{
+  flex:1;
+  height:46px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.35);
+  background:rgba(0,0,0,.35);
+  color:#fff;
+  padding:0 16px;
+  outline:none;
+  font-size:14px;
+}
+#novaStoryFinalViewer .nsfv-reply::placeholder{
+  color:rgba(255,255,255,.72);
+}
+#novaStoryFinalViewer .nsfv-send{
+  width:46px;
+  height:46px;
+  border:0;
+  border-radius:50%;
+  background:#fff;
+  color:#111;
+  font-size:18px;
+  cursor:pointer;
+}
+#novaStoryFinalViewer .nsfv-reactions{
+  display:flex;
+  gap:5px;
+  margin-bottom:8px;
+  justify-content:center;
+}
+#novaStoryFinalViewer .nsfv-reaction{
+  width:39px;
+  height:39px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;
+  background:rgba(0,0,0,.38);
+  font-size:19px;
+  cursor:pointer;
+}
+#novaStoryFinalViewer .nsfv-status{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:30;
+  display:none;
+  padding:10px 16px;
+  border-radius:12px;
+  background:rgba(0,0,0,.72);
+  font-size:13px;
+}
+#novaStoryFinalViewer .nsfv-status.show{
+  display:block;
+}
+#novaStoryFinalViewer .nsfv-loading{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:31;
+  font-size:14px;
+  opacity:.8;
+}
+#novaStoryFinalViewer .nsfv-viewers{
+  position:absolute;
+  top:70px;
+  right:12px;
+  z-index:30;
+  padding:8px 11px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(0,0,0,.42);
+  color:#fff;
+  font-size:12px;
+  cursor:pointer;
+}
+#novaStoryFinalViewer .nsfv-pause{
+  position:absolute;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
+}
+</style>
 
+<div id="novaStoryFinalViewer">
+  <div class="nsfv-bg"></div>
+
+  <div class="nsfv-media" id="novaStoryFinalMedia"></div>
+
+  <div class="nsfv-loading" id="novaStoryFinalLoading">
+    Loading story...
+  </div>
+
+  <div class="nsfv-status" id="novaStoryFinalStatus"></div>
+
+  <div class="nsfv-top">
+    <div class="nsfv-progress" id="novaStoryFinalProgress"></div>
+
+    <div class="nsfv-user">
+      <img
+        id="novaStoryFinalAvatar"
+        class="nsfv-avatar"
+        src=""
+        alt=""
+      >
+
+      <div class="nsfv-user-info">
+        <div id="novaStoryFinalName" class="nsfv-name">
+          NOVA
+        </div>
+
+        <div id="novaStoryFinalTime" class="nsfv-time">
+          Story
+        </div>
+      </div>
+
+      <button
+        id="novaStoryFinalClose"
+        class="nsfv-close"
+        type="button"
+        aria-label="Close story"
+      >×</button>
+    </div>
+  </div>
+
+  <button
+    id="novaStoryFinalViewers"
+    class="nsfv-viewers"
+    type="button"
+  >
+    👁 0
+  </button>
+
+  <button
+    id="novaStoryFinalLeft"
+    class="nsfv-left"
+    type="button"
+    aria-label="Previous story"
+  ></button>
+
+  <button
+    id="novaStoryFinalRight"
+    class="nsfv-right"
+    type="button"
+    aria-label="Next story"
+  ></button>
+
+  <div class="nsfv-bottom">
+    <div class="nsfv-reactions">
+      <button class="nsfv-reaction" data-reaction="❤️">❤️</button>
+      <button class="nsfv-reaction" data-reaction="😂">😂</button>
+      <button class="nsfv-reaction" data-reaction="😮">😮</button>
+      <button class="nsfv-reaction" data-reaction="😢">😢</button>
+      <button class="nsfv-reaction" data-reaction="😡">😡</button>
+      <button class="nsfv-reaction" data-reaction="👍">👍</button>
+    </div>
+
+    <div class="nsfv-actions">
+      <input
+        id="novaStoryFinalReply"
+        class="nsfv-reply"
+        type="text"
+        maxlength="500"
+        placeholder="Reply to story..."
+        autocomplete="off"
+      >
+
+      <button
+        id="novaStoryFinalSend"
+        class="nsfv-send"
+        type="button"
+        aria-label="Send reply"
+      >
+        ➤
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  "use strict";
+
+  const NSFV = {
+    stories: [],
+    index: 0,
+    timer: null,
+    paused: false,
+    startedAt: 0,
+    duration: 5000,
+    currentMedia: null,
+    touchX: 0,
+    touchY: 0,
+    touchTime: 0
+  };
+
+  const $ = id => document.getElementById(id);
+
+  const viewer = $("novaStoryFinalViewer");
+  const mediaBox = $("novaStoryFinalMedia");
+  const loading = $("novaStoryFinalLoading");
+  const statusBox = $("novaStoryFinalStatus");
+  const progressBox = $("novaStoryFinalProgress");
+  const avatar = $("novaStoryFinalAvatar");
+  const nameBox = $("novaStoryFinalName");
+  const timeBox = $("novaStoryFinalTime");
+  const replyInput = $("novaStoryFinalReply");
+  const viewersButton = $("novaStoryFinalViewers");
+
+  function esc(value){
+    return String(value ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function getUser(){
+    try{
+      return window.__NOVA_USER__ ||
+             window.NOVA_CURRENT_USER ||
+             null;
+    }catch(e){
+      return null;
+    }
+  }
+
+  async function currentUser(){
+    try{
+      if(window.db && window.db.auth){
+        const r = await window.db.auth.getUser();
+        if(r && r.data && r.data.user){
+          return r.data.user;
+        }
+      }
+
+      if(window.supabaseClient && window.supabaseClient.auth){
+        const r = await window.supabaseClient.auth.getUser();
+        if(r && r.data && r.data.user){
+          return r.data.user;
+        }
+      }
+    }catch(e){}
+
+    return getUser();
+  }
+
+  function dbClient(){
+    return window.db ||
+           window.supabaseClient ||
+           window.supabase ||
+           null;
+  }
+
+  function showStatus(text, ms){
+    if(!statusBox) return;
+
+    statusBox.textContent = text;
+    statusBox.classList.add("show");
+
+    clearTimeout(NSFV.statusTimer);
+
+    NSFV.statusTimer = setTimeout(()=>{
+      statusBox.classList.remove("show");
+    }, ms || 1800);
+  }
+
+  function storyMediaUrl(row){
+    if(!row) return "";
+
+    return row.media_url ||
+           row.url ||
+           row.file_url ||
+           row.public_url ||
+           row.path ||
+           "";
+  }
+
+  function storyMediaType(row){
+    if(!row) return "image";
+
+    const t = String(
+      row.media_type ||
+      row.type ||
+      ""
+    ).toLowerCase();
+
+    if(
+      t.includes("video") ||
+      /\.(mp4|mov|webm|m4v)(\?|$)/i.test(storyMediaUrl(row))
+    ){
+      return "video";
+    }
+
+    return "image";
+  }
+
+  function profileAvatar(profile){
+    if(!profile) return "";
+
+    return profile.avatar_url ||
+           profile.avatar ||
+           profile.photo_url ||
+           profile.profile_image ||
+           "";
+  }
+
+  function profileName(profile){
+    if(!profile) return "NOVA User";
+
+    return profile.display_name ||
+           profile.full_name ||
+           profile.username ||
+           "NOVA User";
+  }
+
+  function relativeTime(date){
+    if(!date) return "";
+
+    const d = new Date(date);
+    if(Number.isNaN(d.getTime())) return "";
+
+    const diff = Math.max(
+      0,
+      Date.now() - d.getTime()
+    );
+
+    const sec = Math.floor(diff / 1000);
+
+    if(sec < 60) return "just now";
+
+    const min = Math.floor(sec / 60);
+    if(min < 60) return min + "m ago";
+
+    const hour = Math.floor(min / 60);
+    if(hour < 24) return hour + "h ago";
+
+    const day = Math.floor(hour / 24);
+
+    if(day < 7) return day + "d ago";
+
+    return d.toLocaleDateString();
+  }
+
+  function normalizeStory(story, media, profile){
+    const created =
+      story.created_at ||
+      story.inserted_at ||
+      new Date().toISOString();
+
+    return {
+      id: story.id,
+      user_id: story.user_id,
+      created_at: created,
+      expires_at: story.expires_at || null,
+      media_url: storyMediaUrl(media),
+      media_type: storyMediaType(media),
+      profile: profile || {},
+      media: media || {}
+    };
+  }
+
+  async function loadStories(clickedStoryId){
+    const client = dbClient();
+
+    if(!client){
+      throw new Error("Supabase client not found");
+    }
+
+    const now = new Date().toISOString();
+
+    let storyQuery = client
+      .from("stories")
+      .select("*")
+      .order("created_at", {ascending:true});
+
+    const storyResult = await storyQuery;
+
+    if(storyResult.error){
+      throw storyResult.error;
+    }
+
+    let rawStories = storyResult.data || [];
+
+    rawStories = rawStories.filter(s=>{
+      if(!s.expires_at) return true;
+
+      return new Date(s.expires_at).getTime() > Date.now();
+    });
+
+    if(!rawStories.length){
+      return [];
+    }
+
+    const userIds = [
+      ...new Set(
+        rawStories
+          .map(s=>s.user_id)
+          .filter(Boolean)
+      )
+    ];
+
+    let profiles = [];
+
+    if(userIds.length){
+      try{
+        const pr = await client
+          .from("profiles")
+          .select("*")
+          .in("id", userIds);
+
+        if(!pr.error){
+          profiles = pr.data || [];
+        }
+      }catch(e){}
+    }
+
+    const profileMap = {};
+
+    profiles.forEach(p=>{
+      profileMap[p.id] = p;
+    });
+
+    const storyIds = rawStories
+      .map(s=>s.id)
+      .filter(Boolean);
+
+    let mediaRows = [];
+
+    if(storyIds.length){
+      try{
+        const mr = await client
+          .from("story_media")
+          .select("*")
+          .in("story_id", storyIds)
+          .order("sort_order", {ascending:true});
+
+        if(!mr.error){
+          mediaRows = mr.data || [];
+        }
+      }catch(e){}
+    }
+
+    const output = [];
+
+    rawStories.forEach(story=>{
+
+      const medias =
+        mediaRows.filter(m=>
+          String(m.story_id) === String(story.id)
+        );
+
+      if(medias.length){
+
+        medias.forEach(m=>{
+          const url = storyMediaUrl(m);
+
+          if(url){
+            output.push(
+              normalizeStory(
+                story,
+                m,
+                profileMap[story.user_id]
+              )
+            );
+          }
+        });
+
+      }else{
+
+        const directUrl =
+          story.media_url ||
+          story.url ||
+          story.file_url ||
+          "";
+
+        if(directUrl){
+
+          output.push(
+            normalizeStory(
+              story,
+              {
+                media_url:directUrl,
+                media_type:
+                  story.media_type ||
+                  story.type ||
+                  "image"
+              },
+              profileMap[story.user_id]
+            )
+          );
+
+        }
+
+      }
+
+    });
+
+    /*
+      If the user clicked a specific story,
+      place that story first.
+    */
+    if(clickedStoryId){
+
+      const clickedIndex = output.findIndex(
+        s=>String(s.id) === String(clickedStoryId)
+      );
+
+      if(clickedIndex > 0){
+
+        const selected = output.splice(
+          clickedIndex,
+          1
+        )[0];
+
+        output.unshift(selected);
+      }
+    }
+
+    return output;
+  }
+
+  function buildProgress(){
+
+    if(!progressBox) return;
+
+    progressBox.innerHTML = "";
+
+    NSFV.stories.forEach((story,i)=>{
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "nsfv-progress-item";
+
+      const fill =
+        document.createElement("div");
+
+      fill.className =
+        "nsfv-progress-fill";
+
+      fill.dataset.index = i;
+
+      item.appendChild(fill);
+      progressBox.appendChild(item);
+
+    });
+  }
+
+  function updateProgress(index, percent){
+
+    if(!progressBox) return;
+
+    const fills =
+      progressBox.querySelectorAll(
+        ".nsfv-progress-fill"
+      );
+
+    fills.forEach((fill,i)=>{
+
+      if(i < index){
+        fill.style.width = "100%";
+      }
+      else if(i > index){
+        fill.style.width = "0%";
+      }
+      else{
+        fill.style.width =
+          Math.max(0,Math.min(100,percent)) + "%";
+      }
+
+    });
+  }
+
+  async function markViewed(story){
+
+    if(!story || !story.id) return;
+
+    const client = dbClient();
+    if(!client) return;
+
+    const user = await currentUser();
+    if(!user) return;
+
+    try{
+
+      const payload = {
+        story_id:story.id,
+        user_id:user.id
+      };
+
+      let r = await client
+        .from("story_views")
+        .insert(payload);
+
+      /*
+        Duplicate view can be rejected by a unique
+        constraint. That is harmless.
+      */
+
+      if(r.error){
+
+        try{
+          await client
+            .from("story_views")
+            .upsert(payload,{
+              onConflict:"story_id,user_id"
+            });
+        }catch(e){}
+
+      }
+
+    }catch(e){}
+  }
+
+  async function loadViewerCount(story){
+
+    if(!story || !story.id){
+      viewersButton.textContent = "👁 0";
+      return;
+    }
+
+    const client = dbClient();
+
+    if(!client) return;
+
+    try{
+
+      const r = await client
+        .from("story_views")
+        .select("id",{count:"exact",head:true})
+        .eq("story_id",story.id);
+
+      if(!r.error){
+        viewersButton.textContent =
+          "👁 " + (r.count || 0);
+      }
+
+    }catch(e){}
+
+  }
+
+  function clearTimer(){
+    if(NSFV.timer){
+      clearInterval(NSFV.timer);
+      NSFV.timer = null;
+    }
+  }
+
+  function closeViewer(){
+
+    clearTimer();
+
+    const video =
+      mediaBox &&
+      mediaBox.querySelector("video");
+
+    if(video){
+
+      try{
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      }catch(e){}
+
+    }
+
+    if(mediaBox){
+      mediaBox.innerHTML = "";
+    }
+
+    if(viewer){
+      viewer.classList.remove(
+        "nsfv-open"
+      );
+    }
+
+    NSFV.stories = [];
+    NSFV.index = 0;
+    NSFV.currentMedia = null;
+
+    document.body.style.overflow = "";
+  }
+
+  function nextStory(){
+
+    if(!NSFV.stories.length) return;
+
+    if(NSFV.index >= NSFV.stories.length - 1){
+
+      closeViewer();
+      return;
+    }
+
+    NSFV.index++;
+    renderCurrent();
+  }
+
+  function previousStory(){
+
+    if(!NSFV.stories.length) return;
+
+    if(NSFV.index <= 0){
+
+      /*
+        At first story restart it instead of closing.
+      */
+
+      renderCurrent();
+      return;
+    }
+
+    NSFV.index--;
+    renderCurrent();
+  }
+
+  function startImageTimer(){
+
+    clearTimer();
+
+    const start =
+      Date.now();
+
+    NSFV.startedAt = start;
+    NSFV.duration = 5000;
+
+    NSFV.timer = setInterval(()=>{
+
+      if(NSFV.paused) return;
+
+      const elapsed =
+        Date.now() - start;
+
+      const percent =
+        (elapsed / NSFV.duration) * 100;
+
+      updateProgress(
+        NSFV.index,
+        percent
+      );
+
+      if(percent >= 100){
+        clearTimer();
+        nextStory();
+      }
+
+    },40);
+  }
+
+  function startVideo(video){
+
+    clearTimer();
+
+    NSFV.startedAt =
+      Date.now();
+
+    function update(){
+
+      if(!video.duration ||
+         !Number.isFinite(video.duration)){
+        return;
+      }
+
+      const percent =
+        (video.currentTime /
+         video.duration) * 100;
+
+      updateProgress(
+        NSFV.index,
+        percent
+      );
+    }
+
+    video.addEventListener(
+      "timeupdate",
+      update
+    );
+
+    video.addEventListener(
+      "ended",
+      ()=>{
+        clearTimer();
+        nextStory();
+      },
+      {once:true}
+    );
+
+    video.play()
+      .catch(()=>{});
+
+  }
+
+  function renderCurrent(){
+
+    clearTimer();
+
+    if(!NSFV.stories.length){
+      closeViewer();
+      return;
+    }
+
+    const story =
+      NSFV.stories[NSFV.index];
+
+    if(!story){
+      closeViewer();
+      return;
+    }
+
+    NSFV.currentMedia =
+      story.media_url;
+
+    loading.style.display = "none";
+
+    mediaBox.innerHTML = "";
+
+    avatar.src =
+      profileAvatar(story.profile) ||
+      "";
+
+    avatar.onerror = ()=>{
+      avatar.style.visibility = "hidden";
+    };
+
+    nameBox.textContent =
+      profileName(story.profile);
+
+    timeBox.textContent =
+      relativeTime(story.created_at);
+
+    updateProgress(
+      NSFV.index,
+      0
+    );
+
+    markViewed(story);
+    loadViewerCount(story);
+
+    const type =
+      story.media_type;
+
+    if(type === "video"){
+
+      const video =
+        document.createElement("video");
+
+      video.className =
+        "nsfv-video";
+
+      video.src =
+        story.media_url;
+
+      video.playsInline = true;
+      video.autoplay = true;
+      video.muted = false;
+      video.controls = false;
+      video.preload = "auto";
+
+      mediaBox.appendChild(video);
+
+      video.addEventListener(
+        "loadedmetadata",
+        ()=>{
+          startVideo(video);
+        },
+        {once:true}
+      );
+
+      video.addEventListener(
+        "error",
+        ()=>{
+          showStatus(
+            "Could not load this video",
+            2200
+          );
+        }
+      );
+
+      /*
+        iOS may reject autoplay with sound.
+        Try muted first if necessary.
+      */
+      video.play().catch(()=>{
+
+        video.muted = true;
+
+        video.play().catch(()=>{});
+
+      });
+
+    }else{
+
+      const img =
+        document.createElement("img");
+
+      img.src =
+        story.media_url;
+
+      img.alt =
+        "NOVA Story";
+
+      img.draggable = false;
+
+      mediaBox.appendChild(img);
+
+      img.addEventListener(
+        "error",
+        ()=>{
+          showStatus(
+            "Could not load this image",
+            2200
+          );
+        }
+      );
+
+      startImageTimer();
+    }
+  }
+
+  async function openViewer(clickedStoryId){
+
+    try{
+
+      const client = dbClient();
+
+      if(!client){
+        showStatus(
+          "Supabase is not connected",
+          2500
+        );
+        return;
+      }
+
+      viewer.classList.add(
+        "nsfv-open"
+      );
+
+      document.body.style.overflow =
+        "hidden";
+
+      loading.style.display =
+        "block";
+
+      mediaBox.innerHTML = "";
+
+      NSFV.stories =
+        await loadStories(
+          clickedStoryId
+        );
+
+      if(!NSFV.stories.length){
+
+        loading.style.display =
+          "none";
+
+        showStatus(
+          "No active stories found",
+          2200
+        );
+
+        setTimeout(
+          closeViewer,
+          2200
+        );
+
+        return;
+      }
+
+      NSFV.index = 0;
+
+      buildProgress();
+
+      renderCurrent();
+
+    }catch(error){
+
+      console.error(
+        "NOVA Story Viewer error:",
+        error
+      );
+
+      loading.style.display =
+        "none";
+
+      showStatus(
+        error.message ||
+        "Could not open story",
+        3000
+      );
+
+    }
+
+  }
+
+  async function sendReaction(reaction){
+
+    const story =
+      NSFV.stories[NSFV.index];
+
+    if(!story || !story.id) return;
+
+    const client = dbClient();
+    if(!client) return;
+
+    const user =
+      await currentUser();
+
+    if(!user) return;
+
+    try{
+
+      const payload = {
+        story_id:story.id,
+        user_id:user.id,
+        reaction_type:reaction
+      };
+
+      /*
+        Remove previous reaction first.
+      */
+
+      await client
+        .from("story_reactions")
+        .delete()
+        .eq("story_id",story.id)
+        .eq("user_id",user.id);
+
+      const r =
+        await client
+          .from("story_reactions")
+          .insert(payload);
+
+      if(r.error){
+        throw r.error;
+      }
+
+      showStatus(
+        reaction + " sent",
+        1100
+      );
+
+      /*
+        Best-effort notification.
+      */
+
+      if(
+        story.user_id &&
+        story.user_id !== user.id
+      ){
+
+        try{
+
+          await client
+            .from("notifications")
+            .insert({
+              user_id:story.user_id,
+              actor_id:user.id,
+              type:"story_reaction",
+              story_id:story.id,
+              content:reaction
+            });
+
+        }catch(e){}
+
+      }
+
+    }catch(error){
+
+      console.error(
+        "Story reaction error:",
+        error
+      );
+
+      showStatus(
+        "Reaction failed",
+        1800
+      );
+
+    }
+  }
+
+  async function sendReply(){
+
+    const text =
+      String(
+        replyInput.value || ""
+      ).trim();
+
+    if(!text) return;
+
+    const story =
+      NSFV.stories[NSFV.index];
+
+    if(!story || !story.id) return;
+
+    const client = dbClient();
+    if(!client) return;
+
+    const user =
+      await currentUser();
+
+    if(!user){
+
+      showStatus(
+        "Please sign in first",
+        1800
+      );
+
+      return;
+    }
+
+    try{
+
+      const payload = {
+        story_id:story.id,
+        user_id:user.id,
+        content:text
+      };
+
+      const r =
+        await client
+          .from("story_replies")
+          .insert(payload);
+
+      if(r.error){
+        throw r.error;
+      }
+
+      replyInput.value = "";
+
+      showStatus(
+        "Reply sent",
+        1200
+      );
+
+      if(
+        story.user_id &&
+        story.user_id !== user.id
+      ){
+
+        try{
+
+          await client
+            .from("notifications")
+            .insert({
+              user_id:story.user_id,
+              actor_id:user.id,
+              type:"story_reply",
+              story_id:story.id,
+              content:text
+            });
+
+        }catch(e){}
+
+      }
+
+    }catch(error){
+
+      console.error(
+        "Story reply error:",
+        error
+      );
+
+      showStatus(
+        "Reply failed",
+        1800
+      );
+
+    }
+  }
+
+  /*
+    PAUSE / RESUME
+  */
+
+  function pauseStory(){
+
+    NSFV.paused = true;
+
+    const video =
+      mediaBox.querySelector("video");
+
+    if(video){
+
+      try{
+        video.pause();
+      }catch(e){}
+
+    }
+  }
+
+  function resumeStory(){
+
+    NSFV.paused = false;
+
+    const video =
+      mediaBox.querySelector("video");
+
+    if(video){
+
+      try{
+        video.play().catch(()=>{});
+      }catch(e){}
+
+    }
+  }
+
+  /*
+    BUTTONS
+  */
+
+  $("novaStoryFinalClose")
+    .addEventListener(
+      "click",
+      closeViewer
+    );
+
+  $("novaStoryFinalLeft")
+    .addEventListener(
+      "click",
+      previousStory
+    );
+
+  $("novaStoryFinalRight")
+    .addEventListener(
+      "click",
+      nextStory
+    );
+
+  $("novaStoryFinalSend")
+    .addEventListener(
+      "click",
+      sendReply
+    );
+
+  replyInput
+    .addEventListener(
+      "keydown",
+      e=>{
+        if(
+          e.key === "Enter" &&
+          !e.shiftKey
+        ){
+          e.preventDefault();
+          sendReply();
+        }
+      }
+    );
+
+  document
+    .querySelectorAll(
+      "#novaStoryFinalViewer .nsfv-reaction"
+    )
+    .forEach(btn=>{
+
+      btn.addEventListener(
+        "click",
+        ()=>{
+          sendReaction(
+            btn.dataset.reaction
+          );
+        }
+      );
+
+    });
+
+  viewersButton
+    .addEventListener(
+      "click",
+      async ()=>{
+
+        const story =
+          NSFV.stories[NSFV.index];
+
+        if(!story || !story.id) return;
+
+        const client =
+          dbClient();
+
+        if(!client) return;
+
+        try{
+
+          const r =
+            await client
+              .from("story_views")
+              .select(
+                "user_id,viewed_at,created_at"
+              )
+              .eq(
+                "story_id",
+                story.id
+              )
+              .order(
+                "created_at",
+                {ascending:false}
+              );
+
+          if(r.error){
+            throw r.error;
+          }
+
+          const users =
+            r.data || [];
+
+          /*
+            Use existing viewer if available.
+          */
+
+          if(
+            window.NOVA_STORY_INTERACTION &&
+            typeof window.NOVA_STORY_INTERACTION.showViewers === "function"
+          ){
+
+            window.NOVA_STORY_INTERACTION
+              .showViewers(story.id);
+
+            return;
+          }
+
+          showStatus(
+            "Viewed by " +
+            users.length +
+            " user" +
+            (users.length === 1 ? "" : "s"),
+            1800
+          );
+
+        }catch(error){
+
+          console.error(
+            "Story viewers error:",
+            error
+          );
+
+        }
+
+      }
+    );
+
+  /*
+    TOUCH SWIPE
+  */
+
+  viewer.addEventListener(
+    "touchstart",
+    e=>{
+
+      if(!e.touches.length) return;
+
+      NSFV.touchX =
+        e.touches[0].clientX;
+
+      NSFV.touchY =
+        e.touches[0].clientY;
+
+      NSFV.touchTime =
+        Date.now();
+
+    },
+    {passive:true}
+  );
+
+  viewer.addEventListener(
+    "touchend",
+    e=>{
+
+      if(!e.changedTouches.length) return;
+
+      const x =
+        e.changedTouches[0].clientX;
+
+      const y =
+        e.changedTouches[0].clientY;
+
+      const dx =
+        x - NSFV.touchX;
+
+      const dy =
+        y - NSFV.touchY;
+
+      const elapsed =
+        Date.now() -
+        NSFV.touchTime;
+
+      /*
+        Vertical swipe down = close
+      */
+
+      if(
+        dy > 100 &&
+        Math.abs(dy) > Math.abs(dx)
+      ){
+
+        closeViewer();
+        return;
+      }
+
+      /*
+        Horizontal swipe
+      */
+
+      if(
+        Math.abs(dx) > 80 &&
+        Math.abs(dx) > Math.abs(dy)
+      ){
+
+        if(dx < 0){
+          nextStory();
+        }else{
+          previousStory();
+        }
+
+        return;
+      }
+
+      /*
+        Short tap = pause/resume
+      */
+
+      if(
+        Math.abs(dx) < 20 &&
+        Math.abs(dy) < 20 &&
+        elapsed < 500
+      ){
+
+        /*
+          Do not pause when tapping
+          interactive bottom controls.
+        */
+
+        const target =
+          e.target;
+
+        if(
+          target.closest &&
+          target.closest(
+            ".nsfv-bottom,.nsfv-close,.nsfv-viewers"
+          )
+        ){
+          return;
+        }
+
+        if(NSFV.paused){
+          resumeStory();
+        }else{
+          pauseStory();
+        }
+
+      }
+
+    },
+    {passive:true}
+  );
+
+  /*
+    Desktop keyboard controls
+  */
+
+  document.addEventListener(
+    "keydown",
+    e=>{
+
+      if(
+        !viewer.classList.contains(
+          "nsfv-open"
+        )
+      ){
+        return;
+      }
+
+      if(e.key === "Escape"){
+        closeViewer();
+      }
+
+      if(e.key === "ArrowRight"){
+        nextStory();
+      }
+
+      if(e.key === "ArrowLeft"){
+        previousStory();
+      }
+
+      if(e.key === " "){
+        e.preventDefault();
+
+        if(NSFV.paused){
+          resumeStory();
+        }else{
+          pauseStory();
+        }
+      }
+
+    }
+  );
+
+  /*
+    IMPORTANT:
+    Detect story elements from the existing
+    NOVA Story UI and replace their click action.
+  */
+
+  function getStoryIdFromElement(el){
+
+    if(!el) return null;
+
+    return (
+      el.dataset.storyId ||
+      el.dataset.storyid ||
+      el.getAttribute("data-story-id") ||
+      el.getAttribute("data-storyid") ||
+      el.closest &&
+      (
+        el.closest("[data-story-id]") ||
+        el.closest("[data-storyid]")
+      )?.getAttribute("data-story-id") ||
+      null
+    );
+  }
+
+  function attachStoryClick(el){
+
+    if(!el || el.dataset.nsfvAttached){
+      return;
+    }
+
+    const id =
+      getStoryIdFromElement(el);
+
+    if(!id) return;
+
+    el.dataset.nsfvAttached = "1";
+
+    el.addEventListener(
+      "click",
+      function(e){
+
+        /*
+          Ignore buttons inside the story card.
+        */
+
+        if(
+          e.target.closest &&
+          e.target.closest(
+            "button,input,a"
+          ) &&
+          !e.target.closest(
+            "[data-story-id]"
+          )
+        ){
+          return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        openViewer(id);
+
+      },
+      true
+    );
+
+  }
+
+  function scanStoryElements(){
+
+    const selectors = [
+      "[data-story-id]",
+      "[data-storyid]",
+      ".story-item",
+      ".story-card",
+      ".story-avatar",
+      ".story-circle",
+      ".story-thumbnail",
+      ".story",
+      ".stories-item",
+      ".story-user"
+    ];
+
+    selectors.forEach(selector=>{
+
+      document
+        .querySelectorAll(selector)
+        .forEach(el=>{
+
+          const id =
+            getStoryIdFromElement(el);
+
+          if(id){
+            attachStoryClick(el);
+          }
+
+        });
+
+    });
+
+  }
+
+  /*
+    MutationObserver:
+    if the Stories UI is rendered later,
+    automatically attach the new viewer.
+  */
+
+  const observer =
+    new MutationObserver(
+      mutations=>{
+
+        let shouldScan = false;
+
+        for(
+          const mutation of mutations
+        ){
+
+          if(
+            mutation.addedNodes &&
+            mutation.addedNodes.length
+          ){
+
+            shouldScan = true;
+            break;
+          }
+
+        }
+
+        if(shouldScan){
+          scanStoryElements();
+        }
+
+      }
+    );
+
+  observer.observe(
+    document.body,
+    {
+      childList:true,
+      subtree:true
+    }
+  );
+
+  /*
+    Public API
+  */
+
+  window.NOVA_STORY_FINAL_VIEWER = {
+    open:openViewer,
+    close:closeViewer,
+    next:nextStory,
+    previous:previousStory,
+    reload:()=>{
+      const current =
+        NSFV.stories[
+          NSFV.index
+        ];
+
+      return openViewer(
+        current &&
+        current.id
+      );
+    },
+    getState:()=>{
+      return {
+        open:
+          viewer.classList.contains(
+            "nsfv-open"
+          ),
+        index:NSFV.index,
+        total:NSFV.stories.length
+      };
+    }
+  };
+
+  /*
+    Compatibility aliases.
+    If older NOVA modules call one of these,
+    use the final viewer instead.
+  */
+
+  window.NOVA_OPEN_STORY =
+    openViewer;
+
+  window.openNovaStory =
+    openViewer;
+
+  window.openStory =
+    openViewer;
+
+  window.NOVA_OPEN_STORY_VIEWER =
+    openViewer;
+
+  /*
+    Initial scan
+  */
+
+  if(
+    document.readyState ===
+    "loading"
+  ){
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      scanStoryElements,
+      {once:true}
+    );
+
+  }else{
+
+    setTimeout(
+      scanStoryElements,
+      300
+    );
+
+  }
+
+  /*
+    Extra scans because Stories may
+    be rendered after Supabase loading.
+  */
+
+  setTimeout(
+    scanStoryElements,
+    1000
+  );
+
+  setTimeout(
+    scanStoryElements,
+    2500
+  );
+
+  setTimeout(
+    scanStoryElements,
+    5000
+  );
+
+})();
+</script>
 </body>
 </html>
