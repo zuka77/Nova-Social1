@@ -1,528 +1,528 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050505">
-<title>NOVA Social</title>
-<style>
-:root{--bg:#050505;--panel:#0d0d10;--panel2:#15151a;--line:#27272e;--text:#f7f7fa;--muted:#9696a1;--accent:#7657ff;--blue:#1d9bf0;--danger:#ff4567;--green:#35d07f}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}body{min-height:100dvh}
-button,input,textarea{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer}img,video{display:block;max-width:100%}.hidden{display:none!important}
-.auth{min-height:100dvh;display:grid;place-items:center;padding:20px}.auth-card{width:min(430px,100%);background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 90px #0009}.logo{font-size:32px;font-weight:950;letter-spacing:-1.7px}.logo span{color:var(--accent)}.muted{color:var(--muted)}
-.field{margin:10px 0}.field input,.field textarea,.search input,.composer textarea,.chat-compose textarea{width:100%;background:#17171c;border:1px solid #2a2a31;color:#fff;border-radius:14px;padding:13px;outline:0}.field input:focus,.field textarea:focus,.search input:focus,.composer textarea:focus,.chat-compose textarea:focus{border-color:var(--accent)}
-.primary{width:100%;padding:13px 16px;border-radius:14px;background:var(--accent);font-weight:850;margin-top:8px}.auth-switch{text-align:center;margin-top:18px;color:var(--muted);font-size:14px}.auth-switch button{font-weight:800}
-.top{position:sticky;top:0;z-index:30;height:62px;background:#050505ed;backdrop-filter:blur(20px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 15px}.top-actions,.toolrow{display:flex;gap:5px}.top-actions .icon{position:relative}.icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center}.icon:hover{background:#17171b}.icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.layout{width:min(1160px,100%);margin:auto;display:grid;grid-template-columns:220px minmax(0,650px) 250px;gap:18px;padding:18px 14px 90px}.side{position:sticky;top:80px;height:max-content}.navbtn{width:100%;display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;color:#bbb;text-align:left}.navbtn:hover,.navbtn.active{background:#151519;color:#fff}.navbtn svg{width:22px;height:22px}.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;margin-bottom:14px;overflow:hidden}.pad{padding:15px}.section-title{font-size:19px;font-weight:900;margin:8px 0 13px}
-.stories{display:flex;gap:14px;overflow:auto;padding:15px}.story{min-width:68px;text-align:center;color:#aaa;font-size:11px}.story-ring{width:61px;height:61px;padding:2px;border-radius:50%;background:linear-gradient(135deg,#7657ff,#ff477e,#ffb14a);margin:auto}.story-ring img,.story-add{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid #0d0d10}.story-add{display:grid;place-items:center;background:#17171c;font-size:28px}
-.avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#222228;display:grid;place-items:center;color:#aaa;font-weight:850;flex:0 0 auto}.avatar.sm{width:35px;height:35px}.avatar.lg{width:92px;height:92px}.verified-badge{display:inline-flex;vertical-align:-4px;width:18px;height:18px;margin-left:4px}.verified-badge svg{width:18px;height:18px}.verified-badge circle{fill:var(--blue)}.verified-badge path{fill:none;stroke:#fff;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
-.composer-head,.post-head,.user-row{display:flex;align-items:center;gap:10px}.composer textarea{resize:none;min-height:82px;margin-top:12px;background:#111115}.composer-tools{display:flex;align-items:center;justify-content:space-between;margin-top:10px}.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.preview-grid img,.preview-grid video{width:100%;height:120px;object-fit:cover;border-radius:10px}
-.post-content{padding:0 15px 12px;white-space:pre-wrap;word-break:break-word}.post-media{width:100%;max-height:650px;object-fit:cover;background:#000}.post-meta{display:flex;justify-content:space-between;color:#888;font-size:12px;padding:0 15px 10px}.post-actions{display:flex;border-top:1px solid #202027;padding:2px 7px}.post-actions button{display:flex;align-items:center;gap:6px;padding:10px 8px;color:#aaa;border-radius:10px}.post-actions button:hover{background:#17171b;color:#fff}.comment-box{border-top:1px solid #202027;padding:10px 14px}.comment{display:flex;gap:8px;padding:7px 0}.comment-body{background:#17171c;border-radius:13px;padding:8px 10px;flex:1}.comment-body b{font-size:13px}.comment-body div{margin-top:3px;white-space:pre-wrap;word-break:break-word}
-.user-row{width:100%;text-align:left;padding:11px 13px}.user-row:hover{background:#16161a}.user-info{min-width:0;flex:1}.user-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-info small{color:#888}.follow{padding:7px 12px;border-radius:10px;background:#24242b;font-size:12px;font-weight:800}.follow.on{background:#30265b;color:#c4b8ff}
-.chat-shell{height:calc(100dvh - 80px);display:flex;flex-direction:column}.chat-head{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--line)}.chat-head .info{flex:1}.chat-head small{color:#888}.messages{flex:1;overflow:auto;padding:15px 3px}.bubble-row{display:flex;margin:5px 0}.bubble-row.me{justify-content:flex-end}.bubble{max-width:min(78%,430px);padding:10px 12px;border-radius:18px;background:#19191f;word-break:break-word}.me .bubble{background:#684ee5}.bubble img,.bubble video{border-radius:12px;max-height:330px;margin:-2px -2px 6px}.bubble small{display:block;font-size:10px;opacity:.55;margin-top:4px}.bubble-reply{font-size:11px;opacity:.7;border-left:2px solid #fff;padding-left:7px;margin-bottom:6px}.chat-compose{display:flex;align-items:end;gap:6px;padding:8px 0 calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}.chat-compose textarea{flex:1;resize:none;max-height:120px;border-radius:19px}.send{width:42px;height:42px;border-radius:50%;background:var(--accent);display:grid;place-items:center}.recording{color:#ff4567!important;background:#2a151c!important}
-.profile-cover{height:135px;background:linear-gradient(135deg,#17171f,#2a2042)}.profile-main{padding:0 16px 18px}.profile-main .avatar{margin-top:-46px;border:4px solid var(--panel)}.profile-name{font-size:24px;font-weight:950;margin-top:8px}.profile-bio{color:#aaa;margin-top:5px;white-space:pre-wrap}.stats{display:flex;gap:28px;margin:15px 0}.stats b{display:block}.stats span{font-size:12px;color:#888}.profile-actions{display:flex;gap:8px;flex-wrap:wrap}.profile-actions button{padding:10px 15px;border-radius:12px;background:#202027;font-weight:800}
-.modal{position:fixed;inset:0;background:#000b;z-index:100;display:grid;place-items:center;padding:15px}.modal-card{width:min(560px,100%);max-height:92dvh;overflow:auto;background:#101014;border:1px solid var(--line);border-radius:22px;padding:18px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.toast{position:fixed;z-index:200;left:50%;bottom:25px;transform:translateX(-50%);background:#fff;color:#111;padding:11px 16px;border-radius:13px;font-size:13px;box-shadow:0 10px 40px #0009}.empty{text-align:center;color:#888;padding:40px 15px}.danger{color:#ff6a83}.admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.admin-stat{background:#17171c;border:1px solid var(--line);padding:13px;border-radius:14px}.admin-stat b{font-size:22px;display:block}.admin-stat small{color:#888}
-.mobile-nav{display:none}
-@media(max-width:900px){.layout{grid-template-columns:70px minmax(0,650px);justify-content:center}.side .label{display:none}.navbtn{justify-content:center}.right-side{display:none}}
-@media(max-width:680px){.top{height:58px}.layout{display:block;padding:10px 8px 82px}.left-side{display:none}.mobile-nav{position:fixed;display:flex;z-index:40;bottom:0;left:0;right:0;height:64px;background:#08080aef;backdrop-filter:blur(18px);border-top:1px solid var(--line);justify-content:space-around;padding-bottom:env(safe-area-inset-bottom)}.mobile-nav .icon{width:48px}.card{border-radius:17px}.post-media{max-height:520px}.chat-shell{height:calc(100dvh - 68px)}.admin-grid{grid-template-columns:repeat(2,1fr)}}
-</style>
-</head>
-<body>
-<div id="app"></div>
-<script src="https://cdn.jsdelivr.net/npm/appwrite@23.0.0"></script>
-<script>
-(()=>{"use strict";
+    <!doctype html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#050505">
+    <title>NOVA Social</title>
+    <style>
+    :root{--bg:#050505;--panel:#0d0d10;--panel2:#15151a;--line:#27272e;--text:#f7f7fa;--muted:#9696a1;--accent:#7657ff;--blue:#1d9bf0;--danger:#ff4567;--green:#35d07f}
+    *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}body{min-height:100dvh}
+    button,input,textarea{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer}img,video{display:block;max-width:100%}.hidden{display:none!important}
+    .auth{min-height:100dvh;display:grid;place-items:center;padding:20px}.auth-card{width:min(430px,100%);background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 90px #0009}.logo{font-size:32px;font-weight:950;letter-spacing:-1.7px}.logo span{color:var(--accent)}.muted{color:var(--muted)}
+    .field{margin:10px 0}.field input,.field textarea,.search input,.composer textarea,.chat-compose textarea{width:100%;background:#17171c;border:1px solid #2a2a31;color:#fff;border-radius:14px;padding:13px;outline:0}.field input:focus,.field textarea:focus,.search input:focus,.composer textarea:focus,.chat-compose textarea:focus{border-color:var(--accent)}
+    .primary{width:100%;padding:13px 16px;border-radius:14px;background:var(--accent);font-weight:850;margin-top:8px}.auth-switch{text-align:center;margin-top:18px;color:var(--muted);font-size:14px}.auth-switch button{font-weight:800}
+    .top{position:sticky;top:0;z-index:30;height:62px;background:#050505ed;backdrop-filter:blur(20px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 15px}.top-actions,.toolrow{display:flex;gap:5px}.top-actions .icon{position:relative}.icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center}.icon:hover{background:#17171b}.icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+    .layout{width:min(1160px,100%);margin:auto;display:grid;grid-template-columns:220px minmax(0,650px) 250px;gap:18px;padding:18px 14px 90px}.side{position:sticky;top:80px;height:max-content}.navbtn{width:100%;display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;color:#bbb;text-align:left}.navbtn:hover,.navbtn.active{background:#151519;color:#fff}.navbtn svg{width:22px;height:22px}.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;margin-bottom:14px;overflow:hidden}.pad{padding:15px}.section-title{font-size:19px;font-weight:900;margin:8px 0 13px}
+    .stories{display:flex;gap:14px;overflow:auto;padding:15px}.story{min-width:68px;text-align:center;color:#aaa;font-size:11px}.story-ring{width:61px;height:61px;padding:2px;border-radius:50%;background:linear-gradient(135deg,#7657ff,#ff477e,#ffb14a);margin:auto}.story-ring img,.story-add{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid #0d0d10}.story-add{display:grid;place-items:center;background:#17171c;font-size:28px}
+    .avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#222228;display:grid;place-items:center;color:#aaa;font-weight:850;flex:0 0 auto}.avatar.sm{width:35px;height:35px}.avatar.lg{width:92px;height:92px}.verified-badge{display:inline-flex;vertical-align:-4px;width:18px;height:18px;margin-left:4px}.verified-badge svg{width:18px;height:18px}.verified-badge circle{fill:var(--blue)}.verified-badge path{fill:none;stroke:#fff;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+    .composer-head,.post-head,.user-row{display:flex;align-items:center;gap:10px}.composer textarea{resize:none;min-height:82px;margin-top:12px;background:#111115}.composer-tools{display:flex;align-items:center;justify-content:space-between;margin-top:10px}.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.preview-grid img,.preview-grid video{width:100%;height:120px;object-fit:cover;border-radius:10px}
+    .post-content{padding:0 15px 12px;white-space:pre-wrap;word-break:break-word}.post-media{width:100%;max-height:650px;object-fit:cover;background:#000}.post-meta{display:flex;justify-content:space-between;color:#888;font-size:12px;padding:0 15px 10px}.post-actions{display:flex;border-top:1px solid #202027;padding:2px 7px}.post-actions button{display:flex;align-items:center;gap:6px;padding:10px 8px;color:#aaa;border-radius:10px}.post-actions button:hover{background:#17171b;color:#fff}.comment-box{border-top:1px solid #202027;padding:10px 14px}.comment{display:flex;gap:8px;padding:7px 0}.comment-body{background:#17171c;border-radius:13px;padding:8px 10px;flex:1}.comment-body b{font-size:13px}.comment-body div{margin-top:3px;white-space:pre-wrap;word-break:break-word}
+    .user-row{width:100%;text-align:left;padding:11px 13px}.user-row:hover{background:#16161a}.user-info{min-width:0;flex:1}.user-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-info small{color:#888}.follow{padding:7px 12px;border-radius:10px;background:#24242b;font-size:12px;font-weight:800}.follow.on{background:#30265b;color:#c4b8ff}
+    .chat-shell{height:calc(100dvh - 80px);display:flex;flex-direction:column}.chat-head{display:flex;align-items:center;gap:10px;padding:8px 0 12px;border-bottom:1px solid var(--line)}.chat-head .info{flex:1}.chat-head small{color:#888}.messages{flex:1;overflow:auto;padding:15px 3px}.bubble-row{display:flex;margin:5px 0}.bubble-row.me{justify-content:flex-end}.bubble{max-width:min(78%,430px);padding:10px 12px;border-radius:18px;background:#19191f;word-break:break-word}.me .bubble{background:#684ee5}.bubble img,.bubble video{border-radius:12px;max-height:330px;margin:-2px -2px 6px}.bubble small{display:block;font-size:10px;opacity:.55;margin-top:4px}.bubble-reply{font-size:11px;opacity:.7;border-left:2px solid #fff;padding-left:7px;margin-bottom:6px}.chat-compose{display:flex;align-items:end;gap:6px;padding:8px 0 calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}.chat-compose textarea{flex:1;resize:none;max-height:120px;border-radius:19px}.send{width:42px;height:42px;border-radius:50%;background:var(--accent);display:grid;place-items:center}.recording{color:#ff4567!important;background:#2a151c!important}
+    .profile-cover{height:135px;background:linear-gradient(135deg,#17171f,#2a2042)}.profile-main{padding:0 16px 18px}.profile-main .avatar{margin-top:-46px;border:4px solid var(--panel)}.profile-name{font-size:24px;font-weight:950;margin-top:8px}.profile-bio{color:#aaa;margin-top:5px;white-space:pre-wrap}.stats{display:flex;gap:28px;margin:15px 0}.stats b{display:block}.stats span{font-size:12px;color:#888}.profile-actions{display:flex;gap:8px;flex-wrap:wrap}.profile-actions button{padding:10px 15px;border-radius:12px;background:#202027;font-weight:800}
+    .modal{position:fixed;inset:0;background:#000b;z-index:100;display:grid;place-items:center;padding:15px}.modal-card{width:min(560px,100%);max-height:92dvh;overflow:auto;background:#101014;border:1px solid var(--line);border-radius:22px;padding:18px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.toast{position:fixed;z-index:200;left:50%;bottom:25px;transform:translateX(-50%);background:#fff;color:#111;padding:11px 16px;border-radius:13px;font-size:13px;box-shadow:0 10px 40px #0009}.empty{text-align:center;color:#888;padding:40px 15px}.danger{color:#ff6a83}.admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.admin-stat{background:#17171c;border:1px solid var(--line);padding:13px;border-radius:14px}.admin-stat b{font-size:22px;display:block}.admin-stat small{color:#888}
+    .mobile-nav{display:none}
+    @media(max-width:900px){.layout{grid-template-columns:70px minmax(0,650px);justify-content:center}.side .label{display:none}.navbtn{justify-content:center}.right-side{display:none}}
+    @media(max-width:680px){.top{height:58px}.layout{display:block;padding:10px 8px 82px}.left-side{display:none}.mobile-nav{position:fixed;display:flex;z-index:40;bottom:0;left:0;right:0;height:64px;background:#08080aef;backdrop-filter:blur(18px);border-top:1px solid var(--line);justify-content:space-around;padding-bottom:env(safe-area-inset-bottom)}.mobile-nav .icon{width:48px}.card{border-radius:17px}.post-media{max-height:520px}.chat-shell{height:calc(100dvh - 68px)}.admin-grid{grid-template-columns:repeat(2,1fr)}}
+    </style>
+    </head>
+    <body>
+    <div id="app"></div>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@23.0.0"></script>
+    <script>
+    (()=>{"use strict";
 
-/* NOVA SOCIAL — fresh single-file Appwrite build
-   Appwrite Cloud is already connected; no Firebase/Supabase is used. */
+    /* NOVA SOCIAL — fresh single-file Appwrite build
+       Appwrite Cloud is already connected; no Firebase/Supabase is used. */
 
-const CONFIG={
- endpoint:"https://cloud.appwrite.io/v1",
- projectId:"6aa242bf00012f890e92",
- databaseId:"6aa41332002b049743d5",
- bucketId:"6aa421b20025a1b4aac8",
- ownerCode:"Carlos-2839",
- ownerFunction:"https://6aa476550001ca179b26.fra.appwrite.run/"
-};
+    const CONFIG={
+     endpoint:"https://cloud.appwrite.io/v1",
+     projectId:"6aa242bf00012f890e92",
+     databaseId:"6aa41332002b049743d5",
+     bucketId:"6aa421b20025a1b4aac8",
+     ownerCode:"Carlos-2839",
+     ownerFunction:"https://6aa476550001ca179b26.fra.appwrite.run/"
+    };
 
-const T={
- profiles:"profiles",posts:"posts",post_media:"post_media",comments:"comments",
- comment_reactions:"comment_reactions",reactions:"reactions",follows:"follows",
- notifications:"notifications",stories:"stories",story_media:"story_media",
- story_views:"story_views",story_reactions:"story_reactions",story_replies:"story_replies",
- conversations:"conversations",conversation_members:"conversation_members",messages:"messages",
- message_reactions:"message_reactions",user_presence:"user_presence",reports:"reports",
- verification:"verification",admin_actions:"admin_actions",user_blocks:"user_blocks"
-};
+    const T={
+     profiles:"profiles",posts:"posts",post_media:"post_media",comments:"comments",
+     comment_reactions:"comment_reactions",reactions:"reactions",follows:"follows",
+     notifications:"notifications",stories:"stories",story_media:"story_media",
+     story_views:"story_views",story_reactions:"story_reactions",story_replies:"story_replies",
+     conversations:"conversations",conversation_members:"conversation_members",messages:"messages",
+     message_reactions:"message_reactions",user_presence:"user_presence",reports:"reports",
+     verification:"verification",admin_actions:"admin_actions",user_blocks:"user_blocks"
+    };
 
-const A=window.Appwrite;
-if(!A){document.getElementById("app").innerHTML='<div class="auth"><div class="auth-card"><div class="logo">NOVA<span>.</span></div><p class="muted">Appwrite SDK could not load.</p><button class="primary" onclick="location.reload()">Retry</button></div></div>';return}
+    const A=window.Appwrite;
+    if(!A){document.getElementById("app").innerHTML='<div class="auth"><div class="auth-card"><div class="logo">NOVA<span>.</span></div><p class="muted">Appwrite SDK could not load.</p><button class="primary" onclick="location.reload()">Retry</button></div></div>';return}
 
-const {Client,Account,TablesDB,Storage,ID,Query,Realtime,Channel}=A;
-const client=new Client().setEndpoint(CONFIG.endpoint).setProject(CONFIG.projectId);
-const account=new Account(client);
-const db=new TablesDB(client);
-const storage=new Storage(client);
-const realtime=new Realtime(client);
+    const {Client,Account,TablesDB,Storage,ID,Query,Realtime,Channel}=A;
+    const client=new Client().setEndpoint(CONFIG.endpoint).setProject(CONFIG.projectId);
+    const account=new Account(client);
+    const db=new TablesDB(client);
+    const storage=new Storage(client);
+    const realtime=new Realtime(client);
 
-let me=null,myProfile=null,profiles=[],activeChat=null,activeChatUser=null;
-let subscriptions=[],postFiles=[],storyFiles=[],voiceRecorder=null,voiceChunks=[],voiceStream=null,replyTarget=null;
-const $=s=>document.querySelector(s);
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const uid=()=>ID.unique(),now=()=>new Date().toISOString();
-const ago=d=>{const n=Math.max(0,Date.now()-new Date(d).getTime()),m=Math.floor(n/60000);if(m<1)return"now";if(m<60)return m+"m";const h=Math.floor(m/60);if(h<24)return h+"h";return Math.floor(h/24/7)?"w":h+"h"};
-const initials=p=>(p?.displayName||p?.username||"?").trim().slice(0,1).toUpperCase();
+    let me=null,myProfile=null,profiles=[],activeChat=null,activeChatUser=null;
+    let subscriptions=[],postFiles=[],storyFiles=[],voiceRecorder=null,voiceChunks=[],voiceStream=null,replyTarget=null;
+    const $=s=>document.querySelector(s);
+    const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const uid=()=>ID.unique(),now=()=>new Date().toISOString();
+    const ago=d=>{const n=Math.max(0,Date.now()-new Date(d).getTime()),m=Math.floor(n/60000);if(m<1)return"now";if(m<60)return m+"m";const h=Math.floor(m/60);if(h<24)return h+"h";return Math.floor(h/24/7)?"w":h+"h"};
+    const initials=p=>(p?.displayName||p?.username||"?").trim().slice(0,1).toUpperCase();
 
-function svg(n){
- const p={
- home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
- search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
- plus:'<path d="M12 5v14M5 12h14"/>',
- heart:'<path d="M20.8 8.6c0 5.4-8.8 10.4-8.8 10.4S3.2 14 3.2 8.6A4.6 4.6 0 0 1 12 6.3a4.6 4.6 0 0 1 8.8 2.3Z"/>',
- comment:'<path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-4-.9L4 19l.9-3.8A7.5 7.5 0 1 1 20 11.5Z"/>',
- send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
- bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
- user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
- back:'<path d="m15 18-6-6 6-6"/>',
- image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
- mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
- more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
- close:'<path d="M6 6l12 12M18 6 6 18"/>',
- trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
- check:'<path d="m5 12 4 4L19 6"/>',
- logout:'<path d="M10 17l5-5-5-5M15 12H3M14 4h5v16h-5"/>'
- };
- return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(p[n]||p.more)+'</svg>';
-}
-function badge(p){return p?.verified===true?'<span class="verified-badge" title="Verified" aria-label="Verified"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.2 2.8 2.8 6.2-6.2"/></svg></span>':""}
-function avatar(p,cls=""){return p?.avatar?'<img class="avatar '+cls+'" src="'+esc(p.avatar)+'" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'avatar '+cls+'\',textContent:\''+esc(initials(p))+'\'}))">':'<span class="avatar '+cls+'">'+esc(initials(p))+'</span>'}
-function toast(s){const x=document.createElement("div");x.className="toast";x.textContent=s;document.body.appendChild(x);setTimeout(()=>x.remove(),2200)}
-function fail(e){console.error(e);toast(e?.message||"Something went wrong")}
-async function rows(t,q=[]){return(await db.listRows({databaseId:CONFIG.databaseId,tableId:t,queries:q})).rows||[]}
-async function create(t,data){return db.createRow({databaseId:CONFIG.databaseId,tableId:t,rowId:uid(),data})}
-async function update(t,id,data){return db.updateRow({databaseId:CONFIG.databaseId,tableId:t,rowId:id,data})}
-async function remove(t,id){return db.deleteRow({databaseId:CONFIG.databaseId,tableId:t,rowId:id})}
-async function upload(file){const f=await storage.createFile({bucketId:CONFIG.bucketId,fileId:uid(),file});return storage.getFileView({bucketId:CONFIG.bucketId,fileId:f.$id}).toString()}
-async function profile(id){return(await rows(T.profiles,[Query.equal("userId",id),Query.limit(1)]))[0]||null}
-function isOwner(){return !!me&&me.prefs?.ownerCode===CONFIG.ownerCode}
+    function svg(n){
+     const p={
+     home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+     search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+     plus:'<path d="M12 5v14M5 12h14"/>',
+     heart:'<path d="M20.8 8.6c0 5.4-8.8 10.4-8.8 10.4S3.2 14 3.2 8.6A4.6 4.6 0 0 1 12 6.3a4.6 4.6 0 0 1 8.8 2.3Z"/>',
+     comment:'<path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-4-.9L4 19l.9-3.8A7.5 7.5 0 1 1 20 11.5Z"/>',
+     send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+     bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+     user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+     back:'<path d="m15 18-6-6 6-6"/>',
+     image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
+     mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
+     more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+     close:'<path d="M6 6l12 12M18 6 6 18"/>',
+     trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
+     check:'<path d="m5 12 4 4L19 6"/>',
+     logout:'<path d="M10 17l5-5-5-5M15 12H3M14 4h5v16h-5"/>'
+     };
+     return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(p[n]||p.more)+'</svg>';
+    }
+    function badge(p){return p?.verified===true?'<span class="verified-badge" title="Verified" aria-label="Verified"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.2 2.8 2.8 6.2-6.2"/></svg></span>':""}
+    function avatar(p,cls=""){return p?.avatar?'<img class="avatar '+cls+'" src="'+esc(p.avatar)+'" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'avatar '+cls+'\',textContent:\''+esc(initials(p))+'\'}))">':'<span class="avatar '+cls+'">'+esc(initials(p))+'</span>'}
+    function toast(s){const x=document.createElement("div");x.className="toast";x.textContent=s;document.body.appendChild(x);setTimeout(()=>x.remove(),2200)}
+    function fail(e){console.error(e);toast(e?.message||"Something went wrong")}
+    async function rows(t,q=[]){return(await db.listRows({databaseId:CONFIG.databaseId,tableId:t,queries:q})).rows||[]}
+    async function create(t,data){return db.createRow({databaseId:CONFIG.databaseId,tableId:t,rowId:uid(),data})}
+    async function update(t,id,data){return db.updateRow({databaseId:CONFIG.databaseId,tableId:t,rowId:id,data})}
+    async function remove(t,id){return db.deleteRow({databaseId:CONFIG.databaseId,tableId:t,rowId:id})}
+    async function upload(file){const f=await storage.createFile({bucketId:CONFIG.bucketId,fileId:uid(),file});return storage.getFileView({bucketId:CONFIG.bucketId,fileId:f.$id}).toString()}
+    async function profile(id){return(await rows(T.profiles,[Query.equal("userId",id),Query.limit(1)]))[0]||null}
+    function isOwner(){return !!me&&me.prefs?.ownerCode===CONFIG.ownerCode}
 
-async function ensureProfile(){
- myProfile=await profile(me.$id);
- if(!myProfile){
-   let username=(me.name||me.email.split("@")[0]).replace(/[^a-zA-Z0-9_]/g,"").slice(0,30)||("user"+Date.now());
-   myProfile=await create(T.profiles,{userId:me.$id,username,displayName:me.name||username,avatar:"",bio:"",email:me.email,verified:isOwner(),createdAt:now()});
- }else if(isOwner()&&!myProfile.verified){
-   try{myProfile=await update(T.profiles,myProfile.$id,{verified:true})}catch(e){console.warn(e)}
- }
-}
-async function refreshProfiles(){profiles=await rows(T.profiles,[Query.orderDesc("$createdAt"),Query.limit(500)]).catch(()=>[])}
-function findProfile(id){return profiles.find(p=>p.userId===id)||null}
+    async function ensureProfile(){
+     myProfile=await profile(me.$id);
+     if(!myProfile){
+       let username=(me.name||me.email.split("@")[0]).replace(/[^a-zA-Z0-9_]/g,"").slice(0,30)||("user"+Date.now());
+       myProfile=await create(T.profiles,{userId:me.$id,username,displayName:me.name||username,avatar:"",bio:"",email:me.email,verified:isOwner(),createdAt:now()});
+     }else if(isOwner()&&!myProfile.verified){
+       try{myProfile=await update(T.profiles,myProfile.$id,{verified:true})}catch(e){console.warn(e)}
+     }
+    }
+    async function refreshProfiles(){profiles=await rows(T.profiles,[Query.orderDesc("$createdAt"),Query.limit(500)]).catch(()=>[])}
+    function findProfile(id){return profiles.find(p=>p.userId===id)||null}
 
-function authView(mode="login"){
- const signup=mode==="signup";
- document.getElementById("app").innerHTML='<div class="auth"><div class="auth-card"><div class="logo">NOVA<span>.</span></div><p class="muted">'+(signup?"Create your NOVA account":"Welcome back to NOVA")+'</p>'+
- (signup?'<div class="field"><input id="authName" placeholder="Name" autocomplete="name"></div>':"")+
- '<div class="field"><input id="authEmail" type="email" placeholder="Email" autocomplete="email"></div>'+
- '<div class="field"><input id="authPass" type="password" placeholder="Password" autocomplete="'+(signup?"new-password":"current-password")+'"></div>'+
- (signup?'<div class="field"><input id="ownerId" placeholder="Owner ID (optional)" autocomplete="off"></div>':"")+
- '<button class="primary" id="authSubmit">'+(signup?"Create account":"Log in")+'</button>'+
- '<div class="auth-switch">'+(signup?"Already have an account?":"Don't have an account?")+' <button id="authSwitch">'+(signup?"Log in":"Sign up")+'</button></div></div></div>';
- $("#authSubmit").onclick=async()=>{
-  try{
-   const email=$("#authEmail").value.trim(),pass=$("#authPass").value;
-   if(!email||!pass)return toast("Enter email and password");
-   if(signup){
-    const name=$("#authName").value.trim()||email.split("@")[0],code=($("#ownerId")?.value||"").trim();
-    await account.create({userId:ID.unique(),email,password:pass,name});
-    await account.createEmailPasswordSession({email,password:pass});
-    if(code)await account.updatePrefs({ownerCode:code});
-   }else await account.createEmailPasswordSession({email,password:pass});
-   await boot();
-  }catch(e){fail(e)}
- };
- $("#authSwitch").onclick=()=>authView(signup?"login":"signup");
-}
+    function authView(mode="login"){
+     const signup=mode==="signup";
+     document.getElementById("app").innerHTML='<div class="auth"><div class="auth-card"><div class="logo">NOVA<span>.</span></div><p class="muted">'+(signup?"Create your NOVA account":"Welcome back to NOVA")+'</p>'+
+     (signup?'<div class="field"><input id="authName" placeholder="Name" autocomplete="name"></div>':"")+
+     '<div class="field"><input id="authEmail" type="email" placeholder="Email" autocomplete="email"></div>'+
+     '<div class="field"><input id="authPass" type="password" placeholder="Password" autocomplete="'+(signup?"new-password":"current-password")+'"></div>'+
+     (signup?'<div class="field"><input id="ownerId" placeholder="Owner ID (optional)" autocomplete="off"></div>':"")+
+     '<button class="primary" id="authSubmit">'+(signup?"Create account":"Log in")+'</button>'+
+     '<div class="auth-switch">'+(signup?"Already have an account?":"Don't have an account?")+' <button id="authSwitch">'+(signup?"Log in":"Sign up")+'</button></div></div></div>';
+     $("#authSubmit").onclick=async()=>{
+      try{
+       const email=$("#authEmail").value.trim(),pass=$("#authPass").value;
+       if(!email||!pass)return toast("Enter email and password");
+       if(signup){
+        const name=$("#authName").value.trim()||email.split("@")[0],code=($("#ownerId")?.value||"").trim();
+        await account.create({userId:ID.unique(),email,password:pass,name});
+        await account.createEmailPasswordSession({email,password:pass});
+        if(code)await account.updatePrefs({ownerCode:code});
+       }else await account.createEmailPasswordSession({email,password:pass});
+       await boot();
+      }catch(e){fail(e)}
+     };
+     $("#authSwitch").onclick=()=>authView(signup?"login":"signup");
+    }
 
-function nav(){
- return '<button class="navbtn active" onclick="showPage(\'home\')">'+svg("home")+'<span class="label">Home</span></button>'+
- '<button class="navbtn" onclick="showPage(\'search\')">'+svg("search")+'<span class="label">Search</span></button>'+
- '<button class="navbtn" onclick="showPage(\'create\')">'+svg("plus")+'<span class="label">Create</span></button>'+
- '<button class="navbtn" onclick="showPage(\'messages\')">'+svg("send")+'<span class="label">Messages</span></button>'+
- '<button class="navbtn" onclick="showPage(\'notifications\')">'+svg("bell")+'<span class="label">Notifications</span><span data-notif-badge class="follow" style="display:none;padding:2px 6px;background:#ff4567;color:#fff"></span></button>'+
- '<button class="navbtn" onclick="showPage(\'profile\')">'+svg("user")+'<span class="label">Profile</span></button>'+
- (isOwner()?'<button class="navbtn" onclick="openOwnerDashboard()">'+svg("check")+'<span class="label">Owner</span></button>':"")+
- '<button class="navbtn" onclick="logout()">'+svg("logout")+'<span class="label">Log out</span></button>';
-}
-function renderShell(){
- document.getElementById("app").innerHTML='<div class="app"><header class="top"><button class="logo" onclick="showPage(\'home\')">NOVA<span>.</span></button><div class="top-actions">'+
- '<button class="icon" title="Search" onclick="showPage(\'search\')">'+svg("search")+'</button>'+
- '<button class="icon" title="Notifications" onclick="showPage(\'notifications\')">'+svg("bell")+'<span data-notif-badge style="display:none;position:absolute;background:#ff4567;color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin:-27px 0 0 24px"></span></button>'+
- '<button class="icon" title="Profile" onclick="showPage(\'profile\')">'+svg("user")+'</button>'+
- (isOwner()?'<button class="icon" title="Owner" onclick="openOwnerDashboard()">'+svg("check")+'</button>':"")+
- '</div></header><div class="layout"><aside class="side left-side">'+nav()+'</aside><main id="main"></main><aside class="side right-side"><div class="card pad"><b>People on NOVA</b><div id="peopleSide"></div></div></aside></div>'+
- '<nav class="mobile-nav"><button class="icon" onclick="showPage(\'home\')">'+svg("home")+'</button><button class="icon" onclick="showPage(\'search\')">'+svg("search")+'</button><button class="icon" onclick="showPage(\'create\')">'+svg("plus")+'</button><button class="icon" onclick="showPage(\'messages\')">'+svg("send")+'</button><button class="icon" onclick="showPage(\'profile\')">'+svg("user")+'</button><button class="icon" onclick="logout()">'+svg("logout")+'</button></nav></div>';
- renderPeopleSide();
-}
+    function nav(){
+     return '<button class="navbtn active" onclick="showPage(\'home\')">'+svg("home")+'<span class="label">Home</span></button>'+
+     '<button class="navbtn" onclick="showPage(\'search\')">'+svg("search")+'<span class="label">Search</span></button>'+
+     '<button class="navbtn" onclick="showPage(\'create\')">'+svg("plus")+'<span class="label">Create</span></button>'+
+     '<button class="navbtn" onclick="showPage(\'messages\')">'+svg("send")+'<span class="label">Messages</span></button>'+
+     '<button class="navbtn" onclick="showPage(\'notifications\')">'+svg("bell")+'<span class="label">Notifications</span><span data-notif-badge class="follow" style="display:none;padding:2px 6px;background:#ff4567;color:#fff"></span></button>'+
+     '<button class="navbtn" onclick="showPage(\'profile\')">'+svg("user")+'<span class="label">Profile</span></button>'+
+     (isOwner()?'<button class="navbtn" onclick="openOwnerDashboard()">'+svg("check")+'<span class="label">Owner</span></button>':"")+
+     '<button class="navbtn" onclick="logout()">'+svg("logout")+'<span class="label">Log out</span></button>';
+    }
+    function renderShell(){
+     document.getElementById("app").innerHTML='<div class="app"><header class="top"><button class="logo" onclick="showPage(\'home\')">NOVA<span>.</span></button><div class="top-actions">'+
+     '<button class="icon" title="Search" onclick="showPage(\'search\')">'+svg("search")+'</button>'+
+     '<button class="icon" title="Notifications" onclick="showPage(\'notifications\')">'+svg("bell")+'<span data-notif-badge style="display:none;position:absolute;background:#ff4567;color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin:-27px 0 0 24px"></span></button>'+
+     '<button class="icon" title="Profile" onclick="showPage(\'profile\')">'+svg("user")+'</button>'+
+     (isOwner()?'<button class="icon" title="Owner" onclick="openOwnerDashboard()">'+svg("check")+'</button>':"")+
+     '</div></header><div class="layout"><aside class="side left-side">'+nav()+'</aside><main id="main"></main><aside class="side right-side"><div class="card pad"><b>People on NOVA</b><div id="peopleSide"></div></div></aside></div>'+
+     '<nav class="mobile-nav"><button class="icon" onclick="showPage(\'home\')">'+svg("home")+'</button><button class="icon" onclick="showPage(\'search\')">'+svg("search")+'</button><button class="icon" onclick="showPage(\'create\')">'+svg("plus")+'</button><button class="icon" onclick="showPage(\'messages\')">'+svg("send")+'</button><button class="icon" onclick="showPage(\'profile\')">'+svg("user")+'</button><button class="icon" onclick="logout()">'+svg("logout")+'</button></nav></div>';
+     renderPeopleSide();
+    }
 
-async function showPage(page,arg=null){
- if(page==="home")return loadFeed();
- if(page==="search")return renderSearch();
- if(page==="create")return renderCreate();
- if(page==="createStory")return renderCreateStory();
- if(page==="messages")return renderMessages();
- if(page==="chat")return openChat(arg);
- if(page==="notifications")return renderNotifications();
- if(page==="profile")return renderProfile(arg||me.$id);
- if(page==="stories")return renderStories();
- if(page==="user")return renderProfile(arg);
- if(page==="owner")return openOwnerDashboard();
- if(page==="followers")return renderFollowList(arg,"followers");
- if(page==="following")return renderFollowList(arg,"following");
-}
+    async function showPage(page,arg=null){
+     if(page==="home")return loadFeed();
+     if(page==="search")return renderSearch();
+     if(page==="create")return renderCreate();
+     if(page==="createStory")return renderCreateStory();
+     if(page==="messages")return renderMessages();
+     if(page==="chat")return openChat(arg);
+     if(page==="notifications")return renderNotifications();
+     if(page==="profile")return renderProfile(arg||me.$id);
+     if(page==="stories")return renderStories();
+     if(page==="user")return renderProfile(arg);
+     if(page==="owner")return openOwnerDashboard();
+     if(page==="followers")return renderFollowList(arg,"followers");
+     if(page==="following")return renderFollowList(arg,"following");
+    }
 
-async function loadFeed(){
- $("#main").innerHTML='<div class="card stories" id="stories"><button class="story" onclick="showPage(\'createStory\')"><div class="story-ring"><div class="story-add">+</div></div><div>Your story</div></button></div><div id="feed"><div class="empty">Loading…</div></div>';
- try{
-  const ps=await rows(T.posts,[Query.orderDesc("$createdAt"),Query.limit(100)]);
-  $("#feed").innerHTML=ps.length?await Promise.all(ps.map(renderPost)).then(a=>a.join("")):'<div class="card empty">No posts yet.</div>';
-  await renderStoriesStrip();
- }catch(e){$("#feed").innerHTML='<div class="card empty">Could not load feed.</div>';console.error(e)}
-}
-async function renderStoriesStrip(){
- const box=$("#stories");if(!box)return;
- try{
-  const ss=await rows(T.stories,[Query.orderDesc("$createdAt"),Query.limit(100)]);
-  ss.filter(s=>!s.expiresAt||new Date(s.expiresAt)>new Date()).forEach(s=>{const p=findProfile(s.userId);if(p)box.insertAdjacentHTML("beforeend",'<button class="story" onclick="showPage(\'stories\')"><div class="story-ring">'+avatar(p)+'</div><div>'+esc(p.username)+badge(p)+'</div></button>')});
- }catch{}
-}
-async function postMedia(id){return rows(T.post_media,[Query.equal("postId",id),Query.orderAsc("sortOrder"),Query.limit(50)]).catch(()=>[])}
-async function renderPost(p){
- const u=findProfile(p.userId)||{username:"user"},own=p.userId===me.$id;
- const media=await postMedia(p.$id);
- const mediaHtml=media.length?media.map(m=>m.mediaType==="video"?'<video class="post-media" src="'+esc(m.media)+'" controls playsinline></video>':'<img class="post-media" src="'+esc(m.media)+'" alt="" onclick="viewMedia(\''+esc(m.media)+'\')">').join(""):(p.media?mediaOne(p.media):"");
- const comments=await rows(T.comments,[Query.equal("postId",p.$id),Query.orderAsc("$createdAt"),Query.limit(50)]).catch(()=>[]);
- return '<article class="card" data-post="'+esc(p.$id)+'"><div class="pad post-head">'+avatar(u,"sm")+'<div style="flex:1"><b>'+esc(u.displayName||u.username)+badge(u)+'</b><div style="font-size:12px;color:#888">@'+esc(u.username)+' · '+ago(p.createdAt||p.$createdAt)+'</div></div>'+(own?'<button class="icon" onclick="postMenu(\''+esc(p.$id)+'\')">'+svg("more")+'</button>':"")+'</div>'+
- (p.content?'<div class="post-content">'+esc(p.content)+'</div>':"")+mediaHtml+
- '<div class="post-meta"><span>Public post</span><span>♡</span></div><div class="post-actions"><button onclick="reactPost(\''+esc(p.$id)+'\',\'❤️\')">'+svg("heart")+'Like</button><button onclick="focusComment(\''+esc(p.$id)+'\')">'+svg("comment")+'Comment</button><button onclick="sharePost(\''+esc(p.$id)+'\')">'+svg("send")+'Share</button></div>'+
- '<div class="comment-box" id="comments-'+esc(p.$id)+'">'+(comments.length?comments.map(renderComment).join(""):"")+
- '<div style="display:flex;gap:6px;margin-top:7px"><input id="commentInput-'+esc(p.$id)+'" style="flex:1;background:#17171c;border:1px solid #292930;color:#fff;border-radius:12px;padding:9px" placeholder="Write a comment…"><button class="icon" onclick="addComment(\''+esc(p.$id)+'\')">'+svg("send")+'</button></div></div></article>';
-}
-function mediaOne(url){return '<img class="post-media" src="'+esc(url)+'" alt="" onclick="viewMedia(\''+esc(url)+'\')">'}
-function renderComment(c){const p=findProfile(c.userId)||{username:"user"};return '<div class="comment"><div>'+avatar(p,"sm")+'</div><div class="comment-body"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><div>'+esc(c.content)+'</div></div></div>'}
-async function addComment(postId){const el=$("#commentInput-"+postId),v=el?.value.trim();if(!v)return;try{await create(T.comments,{postId,userId:me.$id,content:v,createdAt:now()});el.value="";toast("Comment added");loadFeed()}catch(e){fail(e)}}
-function focusComment(id){const x=$("#commentInput-"+id);if(x){x.focus();x.scrollIntoView({behavior:"smooth",block:"center"})}}
-function postMenu(id){if(confirm("Delete this post?"))deletePost(id)}
-async function deletePost(id){try{await remove(T.posts,id);const ms=await postMedia(id);for(const m of ms)await remove(T.post_media,m.$id).catch(()=>{});toast("Deleted");loadFeed()}catch(e){fail(e)}}
-async function reactPost(postId,reaction){try{const old=await rows(T.reactions,[Query.equal("postId",postId),Query.equal("userId",me.$id),Query.limit(1)]);if(old[0])await remove(T.reactions,old[0].$id);await create(T.reactions,{postId,userId:me.$id,reaction,createdAt:now()});toast(reaction)}catch(e){fail(e)}}
-async function sharePost(id){try{await navigator.clipboard?.writeText(location.href+"#post-"+id)}catch{}toast("Link copied")}
+    async function loadFeed(){
+     $("#main").innerHTML='<div class="card stories" id="stories"><button class="story" onclick="showPage(\'createStory\')"><div class="story-ring"><div class="story-add">+</div></div><div>Your story</div></button></div><div id="feed"><div class="empty">Loading…</div></div>';
+     try{
+      const ps=await rows(T.posts,[Query.orderDesc("$createdAt"),Query.limit(100)]);
+      $("#feed").innerHTML=ps.length?await Promise.all(ps.map(renderPost)).then(a=>a.join("")):'<div class="card empty">No posts yet.</div>';
+      await renderStoriesStrip();
+     }catch(e){$("#feed").innerHTML='<div class="card empty">Could not load feed.</div>';console.error(e)}
+    }
+    async function renderStoriesStrip(){
+     const box=$("#stories");if(!box)return;
+     try{
+      const ss=await rows(T.stories,[Query.orderDesc("$createdAt"),Query.limit(100)]);
+      ss.filter(s=>!s.expiresAt||new Date(s.expiresAt)>new Date()).forEach(s=>{const p=findProfile(s.userId);if(p)box.insertAdjacentHTML("beforeend",'<button class="story" onclick="showPage(\'stories\')"><div class="story-ring">'+avatar(p)+'</div><div>'+esc(p.username)+badge(p)+'</div></button>')});
+     }catch{}
+    }
+    async function postMedia(id){return rows(T.post_media,[Query.equal("postId",id),Query.orderAsc("sortOrder"),Query.limit(50)]).catch(()=>[])}
+    async function renderPost(p){
+     const u=findProfile(p.userId)||{username:"user"},own=p.userId===me.$id;
+     const media=await postMedia(p.$id);
+     const mediaHtml=media.length?media.map(m=>m.mediaType==="video"?'<video class="post-media" src="'+esc(m.media)+'" controls playsinline></video>':'<img class="post-media" src="'+esc(m.media)+'" alt="" onclick="viewMedia(\''+esc(m.media)+'\')">').join(""):(p.media?mediaOne(p.media):"");
+     const comments=await rows(T.comments,[Query.equal("postId",p.$id),Query.orderAsc("$createdAt"),Query.limit(50)]).catch(()=>[]);
+     return '<article class="card" data-post="'+esc(p.$id)+'"><div class="pad post-head">'+avatar(u,"sm")+'<div style="flex:1"><b>'+esc(u.displayName||u.username)+badge(u)+'</b><div style="font-size:12px;color:#888">@'+esc(u.username)+' · '+ago(p.createdAt||p.$createdAt)+'</div></div>'+(own?'<button class="icon" onclick="postMenu(\''+esc(p.$id)+'\')">'+svg("more")+'</button>':"")+'</div>'+
+     (p.content?'<div class="post-content">'+esc(p.content)+'</div>':"")+mediaHtml+
+     '<div class="post-meta"><span>Public post</span><span>♡</span></div><div class="post-actions"><button onclick="reactPost(\''+esc(p.$id)+'\',\'❤️\')">'+svg("heart")+'Like</button><button onclick="focusComment(\''+esc(p.$id)+'\')">'+svg("comment")+'Comment</button><button onclick="sharePost(\''+esc(p.$id)+'\')">'+svg("send")+'Share</button></div>'+
+     '<div class="comment-box" id="comments-'+esc(p.$id)+'">'+(comments.length?comments.map(renderComment).join(""):"")+
+     '<div style="display:flex;gap:6px;margin-top:7px"><input id="commentInput-'+esc(p.$id)+'" style="flex:1;background:#17171c;border:1px solid #292930;color:#fff;border-radius:12px;padding:9px" placeholder="Write a comment…"><button class="icon" onclick="addComment(\''+esc(p.$id)+'\')">'+svg("send")+'</button></div></div></article>';
+    }
+    function mediaOne(url){return '<img class="post-media" src="'+esc(url)+'" alt="" onclick="viewMedia(\''+esc(url)+'\')">'}
+    function renderComment(c){const p=findProfile(c.userId)||{username:"user"};return '<div class="comment"><div>'+avatar(p,"sm")+'</div><div class="comment-body"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><div>'+esc(c.content)+'</div></div></div>'}
+    async function addComment(postId){const el=$("#commentInput-"+postId),v=el?.value.trim();if(!v)return;try{await create(T.comments,{postId,userId:me.$id,content:v,createdAt:now()});el.value="";toast("Comment added");loadFeed()}catch(e){fail(e)}}
+    function focusComment(id){const x=$("#commentInput-"+id);if(x){x.focus();x.scrollIntoView({behavior:"smooth",block:"center"})}}
+    function postMenu(id){if(confirm("Delete this post?"))deletePost(id)}
+    async function deletePost(id){try{await remove(T.posts,id);const ms=await postMedia(id);for(const m of ms)await remove(T.post_media,m.$id).catch(()=>{});toast("Deleted");loadFeed()}catch(e){fail(e)}}
+    async function reactPost(postId,reaction){try{const old=await rows(T.reactions,[Query.equal("postId",postId),Query.equal("userId",me.$id),Query.limit(1)]);if(old[0])await remove(T.reactions,old[0].$id);await create(T.reactions,{postId,userId:me.$id,reaction,createdAt:now()});toast(reaction)}catch(e){fail(e)}}
+    async function sharePost(id){try{await navigator.clipboard?.writeText(location.href+"#post-"+id)}catch{}toast("Link copied")}
 
-function renderCreate(){
- postFiles=[];
- $("#main").innerHTML='<div class="section-title">Create</div>'+
- '<div class="card pad"><div style="display:grid;gap:10px">'+
- '<button class="primary" style="margin:0" onclick="renderPostComposer()">Create post</button>'+
- '<button class="primary" style="margin:0;background:#202027" onclick="renderCreateStory()">Create story</button>'+
- '</div></div><div id="createArea"></div>';
- renderPostComposer();
-}
-function renderPostComposer(){
- postFiles=[];
- const area=$("#createArea");if(!area)return;
- area.innerHTML='<div class="card pad composer"><div class="composer-head">'+avatar(myProfile)+'<div><b>'+esc(myProfile.displayName||myProfile.username)+badge(myProfile)+'</b><div class="muted">New post</div></div></div>'+
- '<textarea id="postText" placeholder="What’s happening?"></textarea><div id="postPreview" class="preview-grid"></div>'+
- '<div class="composer-tools"><button class="icon" title="Photo / video" onclick="$(\'#mediaInput\').click()">'+svg("image")+'</button><input id="mediaInput" type="file" accept="image/*,video/*" multiple hidden>'+
- '<button class="primary" style="width:auto;margin:0" onclick="createPost()">Post</button></div></div>';
- $("#mediaInput").onchange=e=>{postFiles=[...e.target.files];$("#postPreview").innerHTML=postFiles.map(f=>f.type.startsWith("video")?'<video src="'+URL.createObjectURL(f)+'" controls></video>':'<img src="'+URL.createObjectURL(f)+'">').join("")}
-}
-function renderCreateStory(){
- storyFiles=[];
- const area=$("#createArea");if(!area)return;
- area.innerHTML='<div class="card pad composer"><div class="composer-head">'+avatar(myProfile)+'<div><b>'+esc(myProfile.displayName||myProfile.username)+badge(myProfile)+'</b><div class="muted">New story · 24 hours</div></div></div>'+
- '<textarea id="storyText" placeholder="Write a story…"></textarea><div id="storyPreview" class="preview-grid"></div>'+
- '<div class="composer-tools"><button class="icon" title="Photo / video" onclick="$(\'#storyInput\').click()">'+svg("image")+'</button><input id="storyInput" type="file" accept="image/*,video/*" multiple hidden>'+
- '<button class="primary" style="width:auto;margin:0" onclick="createStoryFromComposer()">Share story</button></div></div>';
- $("#storyInput").onchange=e=>{storyFiles=[...e.target.files];$("#storyPreview").innerHTML=storyFiles.map(f=>f.type.startsWith("video")?'<video src="'+URL.createObjectURL(f)+'" controls></video>':'<img src="'+URL.createObjectURL(f)+'">').join("")}
-}
-async function createStoryFromComposer(){
- try{
-  const content=$("#storyText")?.value.trim()||"";
-  if(!content&&!storyFiles.length)return toast("Write something or add media");
-  const s=await create(T.stories,{userId:me.$id,content,media:"",mediaType:"",createdAt:now(),expiresAt:new Date(Date.now()+86400000).toISOString()});
-  let first="",firstType="";
-  for(let i=0;i<storyFiles.length;i++){
-   const f=storyFiles[i],url=await upload(f),type=f.type.startsWith("video")?"video":"image";
-   if(i===0){first=url;firstType=type}
-   await create(T.story_media,{storyId:s.$id,media:url,mediaType:type,sortOrder:i,createdAt:now()});
-  }
-  if(first)await update(T.stories,s.$id,{media:first,mediaType:firstType});
-  storyFiles=[];toast("Story shared");await renderStories();
- }catch(e){fail(e)}
-}
+    function renderCreate(){
+     postFiles=[];
+     $("#main").innerHTML='<div class="section-title">Create</div>'+
+     '<div class="card pad"><div style="display:grid;gap:10px">'+
+     '<button class="primary" style="margin:0" onclick="renderPostComposer()">Create post</button>'+
+     '<button class="primary" style="margin:0;background:#202027" onclick="renderCreateStory()">Create story</button>'+
+     '</div></div><div id="createArea"></div>';
+     renderPostComposer();
+    }
+    function renderPostComposer(){
+     postFiles=[];
+     const area=$("#createArea");if(!area)return;
+     area.innerHTML='<div class="card pad composer"><div class="composer-head">'+avatar(myProfile)+'<div><b>'+esc(myProfile.displayName||myProfile.username)+badge(myProfile)+'</b><div class="muted">New post</div></div></div>'+
+     '<textarea id="postText" placeholder="What’s happening?"></textarea><div id="postPreview" class="preview-grid"></div>'+
+     '<div class="composer-tools"><button class="icon" title="Photo / video" onclick="$(\'#mediaInput\').click()">'+svg("image")+'</button><input id="mediaInput" type="file" accept="image/*,video/*" multiple hidden>'+
+     '<button class="primary" style="width:auto;margin:0" onclick="createPost()">Post</button></div></div>';
+     $("#mediaInput").onchange=e=>{postFiles=[...e.target.files];$("#postPreview").innerHTML=postFiles.map(f=>f.type.startsWith("video")?'<video src="'+URL.createObjectURL(f)+'" controls></video>':'<img src="'+URL.createObjectURL(f)+'">').join("")}
+    }
+    function renderCreateStory(){
+     storyFiles=[];
+     const area=$("#createArea");if(!area)return;
+     area.innerHTML='<div class="card pad composer"><div class="composer-head">'+avatar(myProfile)+'<div><b>'+esc(myProfile.displayName||myProfile.username)+badge(myProfile)+'</b><div class="muted">New story · 24 hours</div></div></div>'+
+     '<textarea id="storyText" placeholder="Write a story…"></textarea><div id="storyPreview" class="preview-grid"></div>'+
+     '<div class="composer-tools"><button class="icon" title="Photo / video" onclick="$(\'#storyInput\').click()">'+svg("image")+'</button><input id="storyInput" type="file" accept="image/*,video/*" multiple hidden>'+
+     '<button class="primary" style="width:auto;margin:0" onclick="createStoryFromComposer()">Share story</button></div></div>';
+     $("#storyInput").onchange=e=>{storyFiles=[...e.target.files];$("#storyPreview").innerHTML=storyFiles.map(f=>f.type.startsWith("video")?'<video src="'+URL.createObjectURL(f)+'" controls></video>':'<img src="'+URL.createObjectURL(f)+'">').join("")}
+    }
+    async function createStoryFromComposer(){
+     try{
+      const content=$("#storyText")?.value.trim()||"";
+      if(!content&&!storyFiles.length)return toast("Write something or add media");
+      const s=await create(T.stories,{userId:me.$id,content,media:"",mediaType:"",createdAt:now(),expiresAt:new Date(Date.now()+86400000).toISOString()});
+      let first="",firstType="";
+      for(let i=0;i<storyFiles.length;i++){
+       const f=storyFiles[i],url=await upload(f),type=f.type.startsWith("video")?"video":"image";
+       if(i===0){first=url;firstType=type}
+       await create(T.story_media,{storyId:s.$id,media:url,mediaType:type,sortOrder:i,createdAt:now()});
+      }
+      if(first)await update(T.stories,s.$id,{media:first,mediaType:firstType});
+      storyFiles=[];toast("Story shared");await renderStories();
+     }catch(e){fail(e)}
+    }
 
-async function createPost(){
- try{
-  const content=$("#postText").value.trim();if(!content&&!postFiles.length)return toast("Write something or add media");
-  const p=await create(T.posts,{userId:me.$id,content,media:"",createdAt:now()});
-  let first="";
-  for(let i=0;i<postFiles.length;i++){const f=postFiles[i],url=await upload(f),type=f.type.startsWith("video")?"video":"image";if(!first)first=url;await create(T.post_media,{postId:p.$id,media:url,mediaType:type,sortOrder:i,createdAt:now()})}
-  if(first)await update(T.posts,p.$id,{media:first});
-  postFiles=[];toast("Posted");showPage("home");
- }catch(e){fail(e)}
-}
+    async function createPost(){
+     try{
+      const content=$("#postText").value.trim();if(!content&&!postFiles.length)return toast("Write something or add media");
+      const p=await create(T.posts,{userId:me.$id,content,media:"",createdAt:now()});
+      let first="";
+      for(let i=0;i<postFiles.length;i++){const f=postFiles[i],url=await upload(f),type=f.type.startsWith("video")?"video":"image";if(!first)first=url;await create(T.post_media,{postId:p.$id,media:url,mediaType:type,sortOrder:i,createdAt:now()})}
+      if(first)await update(T.posts,p.$id,{media:first});
+      postFiles=[];toast("Posted");showPage("home");
+     }catch(e){fail(e)}
+    }
 
-function userRow(p,button=true){return '<div class="user-row" onclick="showPage(\'user\',\''+esc(p.userId)+'\')">'+avatar(p)+'<div class="user-info"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><small>@'+esc(p.username)+'</small></div>'+(button?'<button class="follow" onclick="event.stopPropagation();toggleFollow(\''+esc(p.userId)+'\',this)">Follow</button>':"")+'</div>'}
-function renderSearch(){
- $("#main").innerHTML='<div class="section-title">Search</div><div class="search"><input id="userSearch" placeholder="Search people…"></div><div class="card" id="searchResults"></div>';
- const run=()=>{const q=$("#userSearch").value.toLowerCase().trim(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#searchResults").innerHTML=arr.map(p=>userRow(p)).join("")||'<div class="empty">No users found.</div>'};$("#userSearch").oninput=run;run()
-}
-async function toggleFollow(id,el){
- try{const old=await rows(T.follows,[Query.equal("followerId",me.$id),Query.equal("followingId",id),Query.limit(1)]);if(old[0]){await remove(T.follows,old[0].$id);if(el){el.classList.remove("on");el.textContent="Follow"}}else{await create(T.follows,{followerId:me.$id,followingId:id,createdAt:now()});if(el){el.classList.add("on");el.textContent="Following"}await create(T.notifications,{userId:id,fromUserId:me.$id,type:"follow",message:"started following you",createdAt:now(),read:false})}}catch(e){fail(e)}
-}
+    function userRow(p,button=true){return '<div class="user-row" onclick="showPage(\'user\',\''+esc(p.userId)+'\')">'+avatar(p)+'<div class="user-info"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><small>@'+esc(p.username)+'</small></div>'+(button?'<button class="follow" onclick="event.stopPropagation();toggleFollow(\''+esc(p.userId)+'\',this)">Follow</button>':"")+'</div>'}
+    function renderSearch(){
+     $("#main").innerHTML='<div class="section-title">Search</div><div class="search"><input id="userSearch" placeholder="Search people…"></div><div class="card" id="searchResults"></div>';
+     const run=()=>{const q=$("#userSearch").value.toLowerCase().trim(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#searchResults").innerHTML=arr.map(p=>userRow(p)).join("")||'<div class="empty">No users found.</div>'};$("#userSearch").oninput=run;run()
+    }
+    async function toggleFollow(id,el){
+     try{const old=await rows(T.follows,[Query.equal("followerId",me.$id),Query.equal("followingId",id),Query.limit(1)]);if(old[0]){await remove(T.follows,old[0].$id);if(el){el.classList.remove("on");el.textContent="Follow"}}else{await create(T.follows,{followerId:me.$id,followingId:id,createdAt:now()});if(el){el.classList.add("on");el.textContent="Following"}await create(T.notifications,{userId:id,fromUserId:me.$id,type:"follow",message:"started following you",createdAt:now(),read:false})}}catch(e){fail(e)}
+    }
 
-async function renderProfile(id){
- const p=id===me.$id?myProfile:(findProfile(id)||await profile(id));if(!p)return toast("Profile not found");
- const followers=await rows(T.follows,[Query.equal("followingId",id),Query.limit(500)]).catch(()=>[]);
- const following=await rows(T.follows,[Query.equal("followerId",id),Query.limit(500)]).catch(()=>[]);
- const posts=await rows(T.posts,[Query.equal("userId",id),Query.orderDesc("$createdAt"),Query.limit(100)]).catch(()=>[]);
- $("#main").innerHTML='<div class="card"><div class="profile-cover"></div><div class="profile-main">'+avatar(p,"lg")+'<div class="profile-name">'+esc(p.displayName||p.username)+badge(p)+'</div><div class="muted">@'+esc(p.username)+'</div><div class="profile-bio">'+esc(p.bio||"")+'</div><div class="stats"><button onclick="showPage(\'followers\',\''+esc(id)+'\')" style="text-align:left"><b>'+followers.length+'</b><span>Followers</span></button><button onclick="showPage(\'following\',\''+esc(id)+'\')" style="text-align:left"><b>'+following.length+'</b><span>Following</span></button><div><b>'+posts.length+'</b><span>Posts</span></div></div><div class="profile-actions">'+
- (id===me.$id?'<button onclick="editProfile()">Edit profile</button><button onclick="editAvatar()">Change photo</button>':'<button class="primary" style="width:auto;margin:0" onclick="toggleFollow(\''+esc(id)+'\',this)">Follow</button><button onclick="showPage(\'chat\',\''+esc(id)+'\')">Message</button><button onclick="blockUser(\''+esc(id)+'\')">Block</button>')+
- '</div></div></div><div class="section-title">Posts</div><div id="profilePosts"></div>';
- $("#profilePosts").innerHTML=posts.length?await Promise.all(posts.map(renderPost)).then(a=>a.join("")):'<div class="card empty">No posts.</div>';
-}
-async function renderFollowList(id,type){
- const p=findProfile(id)||await profile(id);if(!p)return toast("Profile not found");
- const field=type==="followers"?"followingId":"followerId";
- const title=type==="followers"?"Followers":"Following";
- $("#main").innerHTML='<div class="section-title"><button class="icon" style="display:inline-grid;vertical-align:middle" onclick="showPage(\'profile\',\''+esc(id)+'\')">'+svg("back")+'</button> '+title+'</div><div class="card" id="followList"><div class="empty">Loading…</div></div>';
- try{
-  const rs=await rows(T.follows,[Query.equal(field,id),Query.limit(500)]);
-  const ids=rs.map(x=>type==="followers"?x.followerId:x.followingId);
-  const ps=ids.map(findProfile).filter(Boolean);
-  $("#followList").innerHTML=ps.map(x=>userRow(x,true)).join("")||'<div class="empty">No '+title.toLowerCase()+'.</div>';
- }catch(e){fail(e)}
-}
-async function editProfile(){
- const name=prompt("Display name",myProfile.displayName||"");if(name===null)return;
- const bio=prompt("Bio",myProfile.bio||"");if(bio===null)return;
- const username=prompt("Username",myProfile.username||"");if(username===null)return;
- try{
-  const clean=username.trim().replace(/[^a-zA-Z0-9_]/g,"").slice(0,30);
-  if(!clean)return toast("Invalid username");
-  myProfile=await update(T.profiles,myProfile.$id,{displayName:name.trim(),bio,username:clean});
-  await refreshProfiles();renderProfile(me.$id);toast("Profile updated");
- }catch(e){fail(e)}
-}
-async function editAvatar(){
- const input=document.createElement("input");input.type="file";input.accept="image/*";
- input.onchange=async()=>{
-  try{
-   const f=input.files?.[0];if(!f)return;
-   if(!f.type.startsWith("image/"))return toast("Choose an image");
-   const url=await upload(f);
-   myProfile=await update(T.profiles,myProfile.$id,{avatar:url});
-   await refreshProfiles();renderShell();await renderProfile(me.$id);toast("Profile photo updated");
-  }catch(e){fail(e)}
- };
- input.click();
-}
-async function blockUser(id){try{await create(T.user_blocks,{userId:me.$id,blockedUserId:id,createdAt:now()});toast("Blocked")}catch(e){fail(e)}}
+    async function renderProfile(id){
+     const p=id===me.$id?myProfile:(findProfile(id)||await profile(id));if(!p)return toast("Profile not found");
+     const followers=await rows(T.follows,[Query.equal("followingId",id),Query.limit(500)]).catch(()=>[]);
+     const following=await rows(T.follows,[Query.equal("followerId",id),Query.limit(500)]).catch(()=>[]);
+     const posts=await rows(T.posts,[Query.equal("userId",id),Query.orderDesc("$createdAt"),Query.limit(100)]).catch(()=>[]);
+     $("#main").innerHTML='<div class="card"><div class="profile-cover"></div><div class="profile-main">'+avatar(p,"lg")+'<div class="profile-name">'+esc(p.displayName||p.username)+badge(p)+'</div><div class="muted">@'+esc(p.username)+'</div><div class="profile-bio">'+esc(p.bio||"")+'</div><div class="stats"><button onclick="showPage(\'followers\',\''+esc(id)+'\')" style="text-align:left"><b>'+followers.length+'</b><span>Followers</span></button><button onclick="showPage(\'following\',\''+esc(id)+'\')" style="text-align:left"><b>'+following.length+'</b><span>Following</span></button><div><b>'+posts.length+'</b><span>Posts</span></div></div><div class="profile-actions">'+
+     (id===me.$id?'<button onclick="editProfile()">Edit profile</button><button onclick="editAvatar()">Change photo</button>':'<button class="primary" style="width:auto;margin:0" onclick="toggleFollow(\''+esc(id)+'\',this)">Follow</button><button onclick="showPage(\'chat\',\''+esc(id)+'\')">Message</button><button onclick="blockUser(\''+esc(id)+'\')">Block</button>')+
+     '</div></div></div><div class="section-title">Posts</div><div id="profilePosts"></div>';
+     $("#profilePosts").innerHTML=posts.length?await Promise.all(posts.map(renderPost)).then(a=>a.join("")):'<div class="card empty">No posts.</div>';
+    }
+    async function renderFollowList(id,type){
+     const p=findProfile(id)||await profile(id);if(!p)return toast("Profile not found");
+     const field=type==="followers"?"followingId":"followerId";
+     const title=type==="followers"?"Followers":"Following";
+     $("#main").innerHTML='<div class="section-title"><button class="icon" style="display:inline-grid;vertical-align:middle" onclick="showPage(\'profile\',\''+esc(id)+'\')">'+svg("back")+'</button> '+title+'</div><div class="card" id="followList"><div class="empty">Loading…</div></div>';
+     try{
+      const rs=await rows(T.follows,[Query.equal(field,id),Query.limit(500)]);
+      const ids=rs.map(x=>type==="followers"?x.followerId:x.followingId);
+      const ps=ids.map(findProfile).filter(Boolean);
+      $("#followList").innerHTML=ps.map(x=>userRow(x,true)).join("")||'<div class="empty">No '+title.toLowerCase()+'.</div>';
+     }catch(e){fail(e)}
+    }
+    async function editProfile(){
+     const name=prompt("Display name",myProfile.displayName||"");if(name===null)return;
+     const bio=prompt("Bio",myProfile.bio||"");if(bio===null)return;
+     const username=prompt("Username",myProfile.username||"");if(username===null)return;
+     try{
+      const clean=username.trim().replace(/[^a-zA-Z0-9_]/g,"").slice(0,30);
+      if(!clean)return toast("Invalid username");
+      myProfile=await update(T.profiles,myProfile.$id,{displayName:name.trim(),bio,username:clean});
+      await refreshProfiles();renderProfile(me.$id);toast("Profile updated");
+     }catch(e){fail(e)}
+    }
+    async function editAvatar(){
+     const input=document.createElement("input");input.type="file";input.accept="image/*";
+     input.onchange=async()=>{
+      try{
+       const f=input.files?.[0];if(!f)return;
+       if(!f.type.startsWith("image/"))return toast("Choose an image");
+       const url=await upload(f);
+       myProfile=await update(T.profiles,myProfile.$id,{avatar:url});
+       await refreshProfiles();renderShell();await renderProfile(me.$id);toast("Profile photo updated");
+      }catch(e){fail(e)}
+     };
+     input.click();
+    }
+    async function blockUser(id){try{await create(T.user_blocks,{userId:me.$id,blockedUserId:id,createdAt:now()});toast("Blocked")}catch(e){fail(e)}}
 
-async function renderMessages(){
- $("#main").innerHTML='<div class="section-title">Messages</div><div class="search"><input id="chatSearch" placeholder="Search people…"></div><div class="card" id="chatUsers"></div>';
- const draw=()=>{const q=$("#chatSearch").value.toLowerCase(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#chatUsers").innerHTML=arr.map(p=>'<button class="user-row" onclick="showPage(\'chat\',\''+esc(p.userId)+'\')">'+avatar(p)+'<div class="user-info"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><small>@'+esc(p.username)+'</small></div></button>').join("")||'<div class="empty">No users yet.</div>'};$("#chatSearch").oninput=draw;draw()
-}
-async function findConversation(id){
- const mine=await rows(T.conversation_members,[Query.equal("userId",me.$id),Query.limit(500)]).catch(()=>[]);
- const theirs=await rows(T.conversation_members,[Query.equal("userId",id),Query.limit(500)]).catch(()=>[]);
- const set=new Set(theirs.map(x=>x.conversationId)),shared=mine.find(x=>set.has(x.conversationId));
- return shared?(await rows(T.conversations,[Query.equal("$id",shared.conversationId),Query.limit(1)]))[0]:null
-}
-async function openChat(id){
- activeChatUser=findProfile(id)||await profile(id);if(!activeChatUser)return;
- let conv=await findConversation(id);
- if(!conv){conv=await create(T.conversations,{createdAt:now(),type:"private",lastMessage:"",lastMessageAt:""});await create(T.conversation_members,{conversationId:conv.$id,userId:me.$id,joinedAt:now(),isAdmin:true});await create(T.conversation_members,{conversationId:conv.$id,userId:id,joinedAt:now(),isAdmin:false})}
- activeChat=conv;replyTarget=null;
- $("#main").innerHTML='<div class="chat-shell"><div class="chat-head"><button class="icon" onclick="showPage(\'messages\')">'+svg("back")+'</button>'+avatar(activeChatUser,"sm")+'<div class="info"><b>'+esc(activeChatUser.displayName||activeChatUser.username)+badge(activeChatUser)+'</b><small>'+esc(activeChatUser.online?"online":"@"+activeChatUser.username)+'</small></div></div><div id="replyBar" style="display:none;padding:8px;border-bottom:1px solid var(--line);font-size:12px"></div><div class="messages" id="messageList"></div><div class="chat-compose"><button class="icon" onclick="$(\'#chatMedia\').click()">'+svg("image")+'</button><input id="chatMedia" type="file" accept="image/*,video/*" multiple hidden><textarea id="chatText" rows="1" placeholder="Message…"></textarea><button class="icon" id="voiceBtn" title="Voice Messenger">'+svg("mic")+'</button><button class="send" onclick="sendText()">'+svg("send")+'</button></div></div>';
- $("#chatMedia").onchange=async e=>{for(const f of [...e.target.files])await sendMedia(f)};
- $("#voiceBtn").onclick=toggleVoice;
- $("#chatText").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText()}});
- await loadMessages();
-}
-async function loadMessages(){
- if(!activeChat)return;const ms=await rows(T.messages,[Query.equal("conversationId",activeChat.$id),Query.orderAsc("$createdAt"),Query.limit(300)]).catch(()=>[]);
- const box=$("#messageList");if(!box)return;box.innerHTML=ms.length?ms.map(renderMessage).join(""):'<div class="empty">Start the conversation.</div>';box.scrollTop=box.scrollHeight
-}
-function renderMessage(m){
- const mine=m.senderId===me.$id,p=findProfile(m.senderId)||{username:"user"};
- const media=m.media?(m.mediaType==="video"?'<video src="'+esc(m.media)+'" controls playsinline></video>':m.mediaType==="audio"?'<audio controls src="'+esc(m.media)+'"></audio>':'<img src="'+esc(m.media)+'" onclick="viewMedia(\''+esc(m.media)+'\')">'):"";
- const reply=m.replyTo?'<div class="bubble-reply">Replying to message</div>':"";
- return '<div class="bubble-row '+(mine?"me":"")+'" data-mid="'+esc(m.$id)+'" ontouchstart="startPress(\''+esc(m.$id)+'\')" ontouchend="cancelPress()" ondblclick="reactMessage(\''+esc(m.$id)+'\',\'❤️\')"><div class="bubble">'+(mine?"":'<div style="font-size:11px;margin-bottom:4px;opacity:.75">'+esc(p.displayName||p.username)+badge(p)+'</div>')+reply+media+(m.content?esc(m.content):"")+'<small>'+ago(m.createdAt||m.$createdAt)+' '+(mine?"✓":"")+'</small></div></div>'
-}
-async function sendText(){
- const el=$("#chatText"),text=el?.value.trim();if(!text||!activeChat)return;
- try{await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:text,media:"",mediaType:"",replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});await update(T.conversations,activeChat.$id,{lastMessage:text,lastMessageAt:now()}).catch(()=>{});el.value="";replyTarget=null;$("#replyBar").style.display="none";await loadMessages()}catch(e){fail(e)}
-}
-async function sendMedia(file){try{const url=await upload(file),type=file.type.startsWith("video")?"video":"image";await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:type,replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});await loadMessages()}catch(e){fail(e)}}
-function pickAudioMime(){
- const list=["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"];
- return list.find(x=>window.MediaRecorder?.isTypeSupported?.(x))||"";
-}
-async function toggleVoice(){
- if(!activeChat)return;
- if(voiceRecorder?.state==="recording"){voiceRecorder.stop();return}
- try{
-  if(!navigator.mediaDevices?.getUserMedia)throw new Error("Voice recording is not supported in this browser");
-  voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
-  voiceChunks=[];
-  const mime=pickAudioMime();
-  voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);
-  const btn=$("#voiceBtn");btn?.classList.add("recording");
-  voiceRecorder.ondataavailable=e=>{if(e.data?.size)voiceChunks.push(e.data)};
-  voiceRecorder.onerror=e=>{console.error(e);voiceStream?.getTracks().forEach(t=>t.stop());btn?.classList.remove("recording")};
-  voiceRecorder.onstop=async()=>{
-   voiceStream?.getTracks().forEach(t=>t.stop());btn?.classList.remove("recording");
-   const type=voiceRecorder.mimeType||mime||"audio/mp4";
-   const ext=type.includes("mp4")?"m4a":"webm";
-   const blob=new Blob(voiceChunks,{type});
-   try{
-    const file=new File([blob],"voice-"+Date.now()+"."+ext,{type});
-    const url=await upload(file);
-    await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:"audio",replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});
-    await update(T.conversations,activeChat.$id,{lastMessage:"Voice message",lastMessageAt:now()}).catch(()=>{});
-    replyTarget=null;if($("#replyBar"))$("#replyBar").style.display="none";
-    await loadMessages();toast("Voice message sent");
-   }catch(e){fail(e)}
-  };
-  voiceRecorder.start(250);toast("Recording… tap the mic again to send");
- }catch(e){fail(e)}
-}
+    async function renderMessages(){
+     $("#main").innerHTML='<div class="section-title">Messages</div><div class="search"><input id="chatSearch" placeholder="Search people…"></div><div class="card" id="chatUsers"></div>';
+     const draw=()=>{const q=$("#chatSearch").value.toLowerCase(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#chatUsers").innerHTML=arr.map(p=>'<button class="user-row" onclick="showPage(\'chat\',\''+esc(p.userId)+'\')">'+avatar(p)+'<div class="user-info"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><small>@'+esc(p.username)+'</small></div></button>').join("")||'<div class="empty">No users yet.</div>'};$("#chatSearch").oninput=draw;draw()
+    }
+    async function findConversation(id){
+     const mine=await rows(T.conversation_members,[Query.equal("userId",me.$id),Query.limit(500)]).catch(()=>[]);
+     const theirs=await rows(T.conversation_members,[Query.equal("userId",id),Query.limit(500)]).catch(()=>[]);
+     const set=new Set(theirs.map(x=>x.conversationId)),shared=mine.find(x=>set.has(x.conversationId));
+     return shared?(await rows(T.conversations,[Query.equal("$id",shared.conversationId),Query.limit(1)]))[0]:null
+    }
+    async function openChat(id){
+     activeChatUser=findProfile(id)||await profile(id);if(!activeChatUser)return;
+     let conv=await findConversation(id);
+     if(!conv){conv=await create(T.conversations,{createdAt:now(),type:"private",lastMessage:"",lastMessageAt:""});await create(T.conversation_members,{conversationId:conv.$id,userId:me.$id,joinedAt:now(),isAdmin:true});await create(T.conversation_members,{conversationId:conv.$id,userId:id,joinedAt:now(),isAdmin:false})}
+     activeChat=conv;replyTarget=null;
+     $("#main").innerHTML='<div class="chat-shell"><div class="chat-head"><button class="icon" onclick="showPage(\'messages\')">'+svg("back")+'</button>'+avatar(activeChatUser,"sm")+'<div class="info"><b>'+esc(activeChatUser.displayName||activeChatUser.username)+badge(activeChatUser)+'</b><small>'+esc(activeChatUser.online?"online":"@"+activeChatUser.username)+'</small></div></div><div id="replyBar" style="display:none;padding:8px;border-bottom:1px solid var(--line);font-size:12px"></div><div class="messages" id="messageList"></div><div class="chat-compose"><button class="icon" onclick="$(\'#chatMedia\').click()">'+svg("image")+'</button><input id="chatMedia" type="file" accept="image/*,video/*" multiple hidden><textarea id="chatText" rows="1" placeholder="Message…"></textarea><button class="icon" id="voiceBtn" title="Voice Messenger">'+svg("mic")+'</button><button class="send" onclick="sendText()">'+svg("send")+'</button></div></div>';
+     $("#chatMedia").onchange=async e=>{for(const f of [...e.target.files])await sendMedia(f)};
+     $("#voiceBtn").onclick=toggleVoice;
+     $("#chatText").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText()}});
+     await loadMessages();
+    }
+    async function loadMessages(){
+     if(!activeChat)return;const ms=await rows(T.messages,[Query.equal("conversationId",activeChat.$id),Query.orderAsc("$createdAt"),Query.limit(300)]).catch(()=>[]);
+     const box=$("#messageList");if(!box)return;box.innerHTML=ms.length?ms.map(renderMessage).join(""):'<div class="empty">Start the conversation.</div>';box.scrollTop=box.scrollHeight
+    }
+    function renderMessage(m){
+     const mine=m.senderId===me.$id,p=findProfile(m.senderId)||{username:"user"};
+     const media=m.media?(m.mediaType==="video"?'<video src="'+esc(m.media)+'" controls playsinline></video>':m.mediaType==="audio"?'<audio controls src="'+esc(m.media)+'"></audio>':'<img src="'+esc(m.media)+'" onclick="viewMedia(\''+esc(m.media)+'\')">'):"";
+     const reply=m.replyTo?'<div class="bubble-reply">Replying to message</div>':"";
+     return '<div class="bubble-row '+(mine?"me":"")+'" data-mid="'+esc(m.$id)+'" ontouchstart="startPress(\''+esc(m.$id)+'\')" ontouchend="cancelPress()" ondblclick="reactMessage(\''+esc(m.$id)+'\',\'❤️\')"><div class="bubble">'+(mine?"":'<div style="font-size:11px;margin-bottom:4px;opacity:.75">'+esc(p.displayName||p.username)+badge(p)+'</div>')+reply+media+(m.content?esc(m.content):"")+'<small>'+ago(m.createdAt||m.$createdAt)+' '+(mine?"✓":"")+'</small></div></div>'
+    }
+    async function sendText(){
+     const el=$("#chatText"),text=el?.value.trim();if(!text||!activeChat)return;
+     try{await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:text,media:"",mediaType:"",replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});await update(T.conversations,activeChat.$id,{lastMessage:text,lastMessageAt:now()}).catch(()=>{});el.value="";replyTarget=null;$("#replyBar").style.display="none";await loadMessages()}catch(e){fail(e)}
+    }
+    async function sendMedia(file){try{const url=await upload(file),type=file.type.startsWith("video")?"video":"image";await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:type,replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});await loadMessages()}catch(e){fail(e)}}
+    function pickAudioMime(){
+     const list=["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"];
+     return list.find(x=>window.MediaRecorder?.isTypeSupported?.(x))||"";
+    }
+    async function toggleVoice(){
+     if(!activeChat)return;
+     if(voiceRecorder?.state==="recording"){voiceRecorder.stop();return}
+     try{
+      if(!navigator.mediaDevices?.getUserMedia)throw new Error("Voice recording is not supported in this browser");
+      voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
+      voiceChunks=[];
+      const mime=pickAudioMime();
+      voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);
+      const btn=$("#voiceBtn");btn?.classList.add("recording");
+      voiceRecorder.ondataavailable=e=>{if(e.data?.size)voiceChunks.push(e.data)};
+      voiceRecorder.onerror=e=>{console.error(e);voiceStream?.getTracks().forEach(t=>t.stop());btn?.classList.remove("recording")};
+      voiceRecorder.onstop=async()=>{
+       voiceStream?.getTracks().forEach(t=>t.stop());btn?.classList.remove("recording");
+       const type=voiceRecorder.mimeType||mime||"audio/mp4";
+       const ext=type.includes("mp4")?"m4a":"webm";
+       const blob=new Blob(voiceChunks,{type});
+       try{
+        const file=new File([blob],"voice-"+Date.now()+"."+ext,{type});
+        const url=await upload(file);
+        await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:"audio",replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});
+        await update(T.conversations,activeChat.$id,{lastMessage:"Voice message",lastMessageAt:now()}).catch(()=>{});
+        replyTarget=null;if($("#replyBar"))$("#replyBar").style.display="none";
+        await loadMessages();toast("Voice message sent");
+       }catch(e){fail(e)}
+      };
+      voiceRecorder.start(250);toast("Recording… tap the mic again to send");
+     }catch(e){fail(e)}
+    }
 
-let pressTimer=null;
-function startPress(id){clearTimeout(pressTimer);pressTimer=setTimeout(()=>messageMenu(id),550)}
-function cancelPress(){clearTimeout(pressTimer)}
-async function messageMenu(id){
- const m=(await rows(T.messages,[Query.equal("$id",id),Query.limit(1)]).catch(()=>[]))[0];if(!m)return;
- const action=prompt("Type: Reply, Copy, Delete, React","Reply")?.toLowerCase();if(!action)return;
- if(action==="reply"){replyTarget=m;$("#replyBar").style.display="block";$("#replyBar").textContent="Replying to message";$("#chatText").focus()}
- else if(action==="copy"){await navigator.clipboard?.writeText(m.content||"");toast("Copied")}
- else if(action==="delete"&&m.senderId===me.$id){try{await remove(T.messages,id);await loadMessages()}catch(e){fail(e)}}
- else if(action==="react")reactMessage(id,"❤️")
-}
-async function reactMessage(id,reaction){try{await create(T.message_reactions,{messageId:id,userId:me.$id,reaction,createdAt:now()});toast(reaction)}catch(e){fail(e)}}
+    let pressTimer=null;
+    function startPress(id){clearTimeout(pressTimer);pressTimer=setTimeout(()=>messageMenu(id),550)}
+    function cancelPress(){clearTimeout(pressTimer)}
+    async function messageMenu(id){
+     const m=(await rows(T.messages,[Query.equal("$id",id),Query.limit(1)]).catch(()=>[]))[0];if(!m)return;
+     const action=prompt("Type: Reply, Copy, Delete, React","Reply")?.toLowerCase();if(!action)return;
+     if(action==="reply"){replyTarget=m;$("#replyBar").style.display="block";$("#replyBar").textContent="Replying to message";$("#chatText").focus()}
+     else if(action==="copy"){await navigator.clipboard?.writeText(m.content||"");toast("Copied")}
+     else if(action==="delete"&&m.senderId===me.$id){try{await remove(T.messages,id);await loadMessages()}catch(e){fail(e)}}
+     else if(action==="react")reactMessage(id,"❤️")
+    }
+    async function reactMessage(id,reaction){try{await create(T.message_reactions,{messageId:id,userId:me.$id,reaction,createdAt:now()});toast(reaction)}catch(e){fail(e)}}
 
-async function getUnreadNotifications(){
- return rows(T.notifications,[Query.equal("userId",me.$id),Query.equal("read",false),Query.limit(200)]).catch(()=>[]);
-}
-async function renderNotificationBadge(){
- const n=await getUnreadNotifications();
- document.querySelectorAll("[data-notif-badge]").forEach(x=>{x.textContent=n.length?String(Math.min(n.length,99)):"";x.style.display=n.length?"inline-block":"none"});
-}
-async function renderNotifications(){
- $("#main").innerHTML='<div class="section-title">Notifications</div><div class="card" id="notifs"><div class="empty">Loading…</div></div>';
- try{
-  const ns=await rows(T.notifications,[Query.equal("userId",me.$id),Query.orderDesc("$createdAt"),Query.limit(200)]);
-  $("#notifs").innerHTML=ns.map(n=>{
-   const p=findProfile(n.fromUserId)||{};
-   const action=n.postId?'<button onclick="showPage(\'home\')">Open</button>':"";
-   return '<div class="user-row" style="border-bottom:1px solid #24242a">'+avatar(p,"sm")+'<div class="user-info"><b>'+esc(n.message||n.type)+badge(p)+'</b><small>'+ago(n.createdAt||n.$createdAt)+'</small></div>'+action+'</div>'
-  }).join("")||'<div class="empty">No notifications.</div>';
-  for(const n of ns.filter(x=>x.read===false))await update(T.notifications,n.$id,{read:true}).catch(()=>{});
-  await renderNotificationBadge();
- }catch(e){fail(e)}
-}
+    async function getUnreadNotifications(){
+     return rows(T.notifications,[Query.equal("userId",me.$id),Query.equal("read",false),Query.limit(200)]).catch(()=>[]);
+    }
+    async function renderNotificationBadge(){
+     const n=await getUnreadNotifications();
+     document.querySelectorAll("[data-notif-badge]").forEach(x=>{x.textContent=n.length?String(Math.min(n.length,99)):"";x.style.display=n.length?"inline-block":"none"});
+    }
+    async function renderNotifications(){
+     $("#main").innerHTML='<div class="section-title">Notifications</div><div class="card" id="notifs"><div class="empty">Loading…</div></div>';
+     try{
+      const ns=await rows(T.notifications,[Query.equal("userId",me.$id),Query.orderDesc("$createdAt"),Query.limit(200)]);
+      $("#notifs").innerHTML=ns.map(n=>{
+       const p=findProfile(n.fromUserId)||{};
+       const action=n.postId?'<button onclick="showPage(\'home\')">Open</button>':"";
+       return '<div class="user-row" style="border-bottom:1px solid #24242a">'+avatar(p,"sm")+'<div class="user-info"><b>'+esc(n.message||n.type)+badge(p)+'</b><small>'+ago(n.createdAt||n.$createdAt)+'</small></div>'+action+'</div>'
+      }).join("")||'<div class="empty">No notifications.</div>';
+      for(const n of ns.filter(x=>x.read===false))await update(T.notifications,n.$id,{read:true}).catch(()=>{});
+      await renderNotificationBadge();
+     }catch(e){fail(e)}
+    }
 
-async function renderStories(){
- $("#main").innerHTML='<div class="section-title">Stories</div><div class="card pad"><button class="primary" onclick="createStory()">Add story</button></div><div id="storyViewer"></div>';
- try{
-  const ss=await rows(T.stories,[Query.orderDesc("$createdAt"),Query.limit(100)]),box=$("#storyViewer");
-  const active=ss.filter(s=>!s.expiresAt||new Date(s.expiresAt)>new Date());
-  box.innerHTML=active.length?await Promise.all(active.map(async s=>{const p=findProfile(s.userId)||{},media=s.media?(s.mediaType==="video"?'<video class="post-media" src="'+esc(s.media)+'" controls playsinline></video>':mediaOne(s.media)):"";return '<article class="card"><div class="pad post-head">'+avatar(p,"sm")+'<div style="flex:1"><b>'+esc(p.displayName||p.username||"user")+badge(p)+'</b><div style="font-size:12px;color:#888">'+ago(s.createdAt||s.$createdAt)+'</div></div>'+(s.userId===me.$id?'<button class="icon" onclick="deleteStory(\''+esc(s.$id)+'\')">'+svg("trash")+'</button>':"")+'</div>'+media+(s.content?'<div class="post-content">'+esc(s.content)+'</div>':"")+'<div class="post-actions"><button onclick="storyReact(\''+esc(s.$id)+'\',\'❤️\')">'+svg("heart")+'React</button><button onclick="storyReply(\''+esc(s.$id)+'\')">'+svg("comment")+'Reply</button></div></article>'})).then(a=>a.join("")):'<div class="card empty">No active stories.</div>';
- }catch(e){fail(e)}
-}
-async function createStory(){
- const text=prompt("Story text (optional)")||"",input=document.createElement("input");input.type="file";input.accept="image/*,video/*";input.multiple=true;
- input.onchange=async()=>{try{const fs=[...input.files],s=await create(T.stories,{userId:me.$id,content:text,media:"",mediaType:"",createdAt:now(),expiresAt:new Date(Date.now()+86400000).toISOString()});let first="",firstType="";for(let i=0;i<fs.length;i++){const url=await upload(fs[i]),type=fs[i].type.startsWith("video")?"video":"image";if(i===0){first=url;firstType=type}await create(T.story_media,{storyId:s.$id,media:url,mediaType:type,sortOrder:i,createdAt:now()})}if(first)await update(T.stories,s.$id,{media:first,mediaType:firstType});toast("Story added");renderStories()}catch(e){fail(e)}};input.click()
-}
-async function deleteStory(id){if(!confirm("Delete story?"))return;try{await remove(T.stories,id);renderStories()}catch(e){fail(e)}}
-async function storyReact(id,r){try{await create(T.story_reactions,{storyId:id,userId:me.$id,reaction:r,createdAt:now()});toast(r)}catch(e){fail(e)}}
-async function storyReply(id){const c=prompt("Reply");if(!c?.trim())return;try{await create(T.story_replies,{storyId:id,userId:me.$id,content:c.trim(),createdAt:now()});toast("Reply sent")}catch(e){fail(e)}}
+    async function renderStories(){
+     $("#main").innerHTML='<div class="section-title">Stories</div><div class="card pad"><button class="primary" onclick="createStory()">Add story</button></div><div id="storyViewer"></div>';
+     try{
+      const ss=await rows(T.stories,[Query.orderDesc("$createdAt"),Query.limit(100)]),box=$("#storyViewer");
+      const active=ss.filter(s=>!s.expiresAt||new Date(s.expiresAt)>new Date());
+      box.innerHTML=active.length?await Promise.all(active.map(async s=>{const p=findProfile(s.userId)||{},media=s.media?(s.mediaType==="video"?'<video class="post-media" src="'+esc(s.media)+'" controls playsinline></video>':mediaOne(s.media)):"";return '<article class="card"><div class="pad post-head">'+avatar(p,"sm")+'<div style="flex:1"><b>'+esc(p.displayName||p.username||"user")+badge(p)+'</b><div style="font-size:12px;color:#888">'+ago(s.createdAt||s.$createdAt)+'</div></div>'+(s.userId===me.$id?'<button class="icon" onclick="deleteStory(\''+esc(s.$id)+'\')">'+svg("trash")+'</button>':"")+'</div>'+media+(s.content?'<div class="post-content">'+esc(s.content)+'</div>':"")+'<div class="post-actions"><button onclick="storyReact(\''+esc(s.$id)+'\',\'❤️\')">'+svg("heart")+'React</button><button onclick="storyReply(\''+esc(s.$id)+'\')">'+svg("comment")+'Reply</button></div></article>'})).then(a=>a.join("")):'<div class="card empty">No active stories.</div>';
+     }catch(e){fail(e)}
+    }
+    async function createStory(){
+     const text=prompt("Story text (optional)")||"",input=document.createElement("input");input.type="file";input.accept="image/*,video/*";input.multiple=true;
+     input.onchange=async()=>{try{const fs=[...input.files],s=await create(T.stories,{userId:me.$id,content:text,media:"",mediaType:"",createdAt:now(),expiresAt:new Date(Date.now()+86400000).toISOString()});let first="",firstType="";for(let i=0;i<fs.length;i++){const url=await upload(fs[i]),type=fs[i].type.startsWith("video")?"video":"image";if(i===0){first=url;firstType=type}await create(T.story_media,{storyId:s.$id,media:url,mediaType:type,sortOrder:i,createdAt:now()})}if(first)await update(T.stories,s.$id,{media:first,mediaType:firstType});toast("Story added");renderStories()}catch(e){fail(e)}};input.click()
+    }
+    async function deleteStory(id){if(!confirm("Delete story?"))return;try{await remove(T.stories,id);renderStories()}catch(e){fail(e)}}
+    async function storyReact(id,r){try{await create(T.story_reactions,{storyId:id,userId:me.$id,reaction:r,createdAt:now()});toast(r)}catch(e){fail(e)}}
+    async function storyReply(id){const c=prompt("Reply");if(!c?.trim())return;try{await create(T.story_replies,{storyId:id,userId:me.$id,content:c.trim(),createdAt:now()});toast("Reply sent")}catch(e){fail(e)}}
 
-async function updatePresence(online){
- try{const r=await rows(T.user_presence,[Query.equal("userId",me.$id),Query.limit(1)]),data={userId:me.$id,online,lastSeen:now()};if(r[0])await update(T.user_presence,r[0].$id,data);else await create(T.user_presence,data)}catch{}
-}
-async function subscribeAll(){
- subscriptions.forEach(s=>{try{s()}catch{}});subscriptions=[];
- try{
-  const channels=[
-   Channel.tablesdb(CONFIG.databaseId).table(T.messages).row().create(),
-   Channel.tablesdb(CONFIG.databaseId).table(T.notifications).row().create(),
-   Channel.tablesdb(CONFIG.databaseId).table(T.follows).row().create(),
-   Channel.tablesdb(CONFIG.databaseId).table(T.reactions).row().create()
-  ];
-  const sub=realtime.subscribe(channels,()=>{if(activeChat)loadMessages();renderNotificationBadge();});subscriptions.push(sub);
- }catch(e){console.warn("Realtime unavailable",e)}
-}
-async function logout(){try{await updatePresence(false);await account.deleteSession({sessionId:"current"});location.reload()}catch(e){fail(e)}}
-function viewMedia(url){const m=document.createElement("div");m.className="modal";m.innerHTML='<div class="modal-card" style="background:#000"><div class="modal-head"><b>Media</b><button class="icon" onclick="this.closest(\'.modal\').remove()">'+svg("close")+'</button></div><img src="'+esc(url)+'" style="max-height:82dvh;margin:auto;object-fit:contain"></div>';document.body.appendChild(m)}
+    async function updatePresence(online){
+     try{const r=await rows(T.user_presence,[Query.equal("userId",me.$id),Query.limit(1)]),data={userId:me.$id,online,lastSeen:now()};if(r[0])await update(T.user_presence,r[0].$id,data);else await create(T.user_presence,data)}catch{}
+    }
+    async function subscribeAll(){
+     subscriptions.forEach(s=>{try{s()}catch{}});subscriptions=[];
+     try{
+      const channels=[
+       Channel.tablesdb(CONFIG.databaseId).table(T.messages).row().create(),
+       Channel.tablesdb(CONFIG.databaseId).table(T.notifications).row().create(),
+       Channel.tablesdb(CONFIG.databaseId).table(T.follows).row().create(),
+       Channel.tablesdb(CONFIG.databaseId).table(T.reactions).row().create()
+      ];
+      const sub=realtime.subscribe(channels,()=>{if(activeChat)loadMessages();renderNotificationBadge();});subscriptions.push(sub);
+     }catch(e){console.warn("Realtime unavailable",e)}
+    }
+    async function logout(){try{await updatePresence(false);await account.deleteSession({sessionId:"current"});location.reload()}catch(e){fail(e)}}
+    function viewMedia(url){const m=document.createElement("div");m.className="modal";m.innerHTML='<div class="modal-card" style="background:#000"><div class="modal-head"><b>Media</b><button class="icon" onclick="this.closest(\'.modal\').remove()">'+svg("close")+'</button></div><img src="'+esc(url)+'" style="max-height:82dvh;margin:auto;object-fit:contain"></div>';document.body.appendChild(m)}
 
-async function openOwnerDashboard(){
- if(!isOwner())return toast("Owner access only");
- $("#main").innerHTML='<div class="section-title">Owner Dashboard</div><div class="card pad"><div style="display:flex;gap:7px;flex-wrap:wrap">'+
- '<button onclick="ownerUsers()">Users</button><button onclick="ownerReports()">Reports</button><button onclick="ownerPosts()">Posts</button><button onclick="ownerStories()">Stories</button><button onclick="ownerStats()">Stats</button><button onclick="ownerRefresh()">Refresh</button></div></div>'+
- '<div id="ownerPanel" class="card pad"><div class="empty">Choose a section.</div></div>';
- ownerUsers();
-}
-async function ownerCall(action,extra={}){
- const r=await fetch(CONFIG.ownerFunction,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ownerId:CONFIG.ownerCode,action,...extra})});
- const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.error||"Owner Function error");return d
-}
-async function ownerUsers(){
- const b=$("#ownerPanel");if(!b)return;b.innerHTML="Loading users…";
- try{const d=await ownerCall("listUsers"),us=d.users||[];b.innerHTML='<input id="ownerSearch" placeholder="Search users..." style="width:100%;padding:11px;margin-bottom:10px;background:#17171c;color:#fff;border:1px solid #292930;border-radius:12px"><div id="ownerUsersList">'+ownerRows(us)+'</div>';$("#ownerSearch").oninput=()=>{$("#ownerUsersList").innerHTML=ownerRows(us.filter(u=>(u.name+" "+u.email+" "+u.$id).toLowerCase().includes($("#ownerSearch").value.toLowerCase())))}}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
-}
-function ownerRows(us){return us.map(u=>'<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.name||"No name")+'</b><small>'+esc(u.email||"")+' · '+esc(u.$id||"")+'</small><small>Status: '+(u.status===false?"Disabled":"Active")+'</small></div><button onclick="ownerVerify(\''+esc(u.$id)+'\')">'+svg("check")+'</button><button onclick="ownerDisable(\''+esc(u.$id)+'\','+(u.status!==false)+')">'+(u.status===false?"Enable":"Disable")+'</button><button class="danger" onclick="ownerDelete(\''+esc(u.$id)+'\')">'+svg("trash")+'</button></div>').join("")||'<div class="empty">No users.</div>'}
-async function ownerVerify(id){try{await ownerCall("verifyUser",{userId:id});const p=await profile(id);if(p)await update(T.profiles,p.$id,{verified:true});await refreshProfiles();toast("Verified");ownerUsers()}catch(e){fail(e)}}
-async function ownerDisable(id,status){try{await ownerCall("setUserStatus",{userId:id,status});ownerUsers()}catch(e){fail(e)}}
-async function ownerDelete(id){if(id===me.$id)return toast("Owner cannot delete current account");if(!confirm("Delete user?"))return;try{await ownerCall("deleteUser",{userId:id});ownerUsers()}catch(e){fail(e)}}
-async function ownerPosts(){
- const b=$("#ownerPanel");if(!b)return;b.innerHTML="<div class='empty'>Loading posts…</div>";
- try{
-  const ps=await rows(T.posts,[Query.orderDesc("$createdAt"),Query.limit(200)]);
-  b.innerHTML=ps.map(p=>{const u=findProfile(p.userId)||{};return '<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.displayName||u.username||p.userId)+badge(u)+'</b><small>'+esc((p.content||"").slice(0,120))+' · '+ago(p.createdAt||p.$createdAt)+'</small></div><button onclick="ownerDeletePost(\''+esc(p.$id)+'\')">'+svg("trash")+'</button></div>'}).join("")||'<div class="empty">No posts.</div>';
- }catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
-}
-async function ownerDeletePost(id){
- if(!confirm("Delete this post and its media rows?"))return;
- try{await remove(T.posts,id);const ms=await postMedia(id);for(const m of ms)await remove(T.post_media,m.$id).catch(()=>{});toast("Post deleted");ownerPosts()}catch(e){fail(e)}
-}
-async function ownerStories(){
- const b=$("#ownerPanel");if(!b)return;b.innerHTML="<div class='empty'>Loading stories…</div>";
- try{
-  const ss=await rows(T.stories,[Query.orderDesc("$createdAt"),Query.limit(200)]);
-  b.innerHTML=ss.map(s=>{const u=findProfile(s.userId)||{};return '<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.displayName||u.username||s.userId)+badge(u)+'</b><small>'+esc((s.content||"").slice(0,100))+' · '+ago(s.createdAt||s.$createdAt)+'</small></div><button onclick="ownerDeleteStory(\''+esc(s.$id)+'\')">'+svg("trash")+'</button></div>'}).join("")||'<div class="empty">No stories.</div>';
- }catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
-}
-async function ownerDeleteStory(id){
- if(!confirm("Delete this story and its media rows?"))return;
- try{await remove(T.stories,id);const ms=await rows(T.story_media,[Query.equal("storyId",id),Query.limit(100)]).catch(()=>[]);for(const m of ms)await remove(T.story_media,m.$id).catch(()=>{});toast("Story deleted");ownerStories()}catch(e){fail(e)}
-}
+    async function openOwnerDashboard(){
+     if(!isOwner())return toast("Owner access only");
+     $("#main").innerHTML='<div class="section-title">Owner Dashboard</div><div class="card pad"><div style="display:flex;gap:7px;flex-wrap:wrap">'+
+     '<button onclick="ownerUsers()">Users</button><button onclick="ownerReports()">Reports</button><button onclick="ownerPosts()">Posts</button><button onclick="ownerStories()">Stories</button><button onclick="ownerStats()">Stats</button><button onclick="ownerRefresh()">Refresh</button></div></div>'+
+     '<div id="ownerPanel" class="card pad"><div class="empty">Choose a section.</div></div>';
+     ownerUsers();
+    }
+    async function ownerCall(action,extra={}){
+     const r=await fetch(CONFIG.ownerFunction,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ownerId:CONFIG.ownerCode,action,...extra})});
+     const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.error||"Owner Function error");return d
+    }
+    async function ownerUsers(){
+     const b=$("#ownerPanel");if(!b)return;b.innerHTML="Loading users…";
+     try{const d=await ownerCall("listUsers"),us=d.users||[];b.innerHTML='<input id="ownerSearch" placeholder="Search users..." style="width:100%;padding:11px;margin-bottom:10px;background:#17171c;color:#fff;border:1px solid #292930;border-radius:12px"><div id="ownerUsersList">'+ownerRows(us)+'</div>';$("#ownerSearch").oninput=()=>{$("#ownerUsersList").innerHTML=ownerRows(us.filter(u=>(u.name+" "+u.email+" "+u.$id).toLowerCase().includes($("#ownerSearch").value.toLowerCase())))}}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+    }
+    function ownerRows(us){return us.map(u=>'<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.name||"No name")+'</b><small>'+esc(u.email||"")+' · '+esc(u.$id||"")+'</small><small>Status: '+(u.status===false?"Disabled":"Active")+'</small></div><button onclick="ownerVerify(\''+esc(u.$id)+'\')">'+svg("check")+'</button><button onclick="ownerDisable(\''+esc(u.$id)+'\','+(u.status!==false)+')">'+(u.status===false?"Enable":"Disable")+'</button><button class="danger" onclick="ownerDelete(\''+esc(u.$id)+'\')">'+svg("trash")+'</button></div>').join("")||'<div class="empty">No users.</div>'}
+    async function ownerVerify(id){try{await ownerCall("verifyUser",{userId:id});const p=await profile(id);if(p)await update(T.profiles,p.$id,{verified:true});await refreshProfiles();toast("Verified");ownerUsers()}catch(e){fail(e)}}
+    async function ownerDisable(id,status){try{await ownerCall("setUserStatus",{userId:id,status});ownerUsers()}catch(e){fail(e)}}
+    async function ownerDelete(id){if(id===me.$id)return toast("Owner cannot delete current account");if(!confirm("Delete user?"))return;try{await ownerCall("deleteUser",{userId:id});ownerUsers()}catch(e){fail(e)}}
+    async function ownerPosts(){
+     const b=$("#ownerPanel");if(!b)return;b.innerHTML="<div class='empty'>Loading posts…</div>";
+     try{
+      const ps=await rows(T.posts,[Query.orderDesc("$createdAt"),Query.limit(200)]);
+      b.innerHTML=ps.map(p=>{const u=findProfile(p.userId)||{};return '<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.displayName||u.username||p.userId)+badge(u)+'</b><small>'+esc((p.content||"").slice(0,120))+' · '+ago(p.createdAt||p.$createdAt)+'</small></div><button onclick="ownerDeletePost(\''+esc(p.$id)+'\')">'+svg("trash")+'</button></div>'}).join("")||'<div class="empty">No posts.</div>';
+     }catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+    }
+    async function ownerDeletePost(id){
+     if(!confirm("Delete this post and its media rows?"))return;
+     try{await remove(T.posts,id);const ms=await postMedia(id);for(const m of ms)await remove(T.post_media,m.$id).catch(()=>{});toast("Post deleted");ownerPosts()}catch(e){fail(e)}
+    }
+    async function ownerStories(){
+     const b=$("#ownerPanel");if(!b)return;b.innerHTML="<div class='empty'>Loading stories…</div>";
+     try{
+      const ss=await rows(T.stories,[Query.orderDesc("$createdAt"),Query.limit(200)]);
+      b.innerHTML=ss.map(s=>{const u=findProfile(s.userId)||{};return '<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.displayName||u.username||s.userId)+badge(u)+'</b><small>'+esc((s.content||"").slice(0,100))+' · '+ago(s.createdAt||s.$createdAt)+'</small></div><button onclick="ownerDeleteStory(\''+esc(s.$id)+'\')">'+svg("trash")+'</button></div>'}).join("")||'<div class="empty">No stories.</div>';
+     }catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+    }
+    async function ownerDeleteStory(id){
+     if(!confirm("Delete this story and its media rows?"))return;
+     try{await remove(T.stories,id);const ms=await rows(T.story_media,[Query.equal("storyId",id),Query.limit(100)]).catch(()=>[]);for(const m of ms)await remove(T.story_media,m.$id).catch(()=>{});toast("Story deleted");ownerStories()}catch(e){fail(e)}
+    }
 
-async function ownerReports(){const b=$("#ownerPanel");try{const d=await ownerCall("listReports"),rs=d.reports||[];b.innerHTML=rs.map(r=>'<div class="pad" style="border-bottom:1px solid #24242a"><b>'+esc(r.reason||"Report")+'</b><div class="muted">'+esc(r.reportedUserId||"")+' '+esc(r.postId||"")+' '+esc(r.messageId||"")+'</div></div>').join("")||'<div class="empty">No reports.</div>'}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
-async function ownerStats(){const b=$("#ownerPanel");try{const u=await ownerCall("listUsers"),[p,s,c]=await Promise.all([rows(T.posts,[Query.limit(500)]),rows(T.stories,[Query.limit(500)]),rows(T.comments,[Query.limit(500)])]);b.innerHTML='<div class="admin-grid"><div class="admin-stat"><b>'+((u.users||[]).length)+'</b><small>Users</small></div><div class="admin-stat"><b>'+p.length+'</b><small>Posts</small></div><div class="admin-stat"><b>'+s.length+'</b><small>Stories</small></div><div class="admin-stat"><b>'+c.length+'</b><small>Comments</small></div></div>'}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
-async function ownerRefresh(){await refreshProfiles();renderShell();openOwnerDashboard();toast("Refreshed")}
-function renderPeopleSide(){const x=$("#peopleSide");if(!x)return;x.innerHTML=profiles.filter(p=>p.userId!==me.$id).slice(0,8).map(p=>'<button class="user-row" style="padding:8px 0" onclick="showPage(\'user\',\''+esc(p.userId)+'\')">'+avatar(p,"sm")+'<div class="user-info"><b>'+esc(p.username)+badge(p)+'</b></div></button>').join("")||'<small class="muted">No other users yet.</small>'}
+    async function ownerReports(){const b=$("#ownerPanel");try{const d=await ownerCall("listReports"),rs=d.reports||[];b.innerHTML=rs.map(r=>'<div class="pad" style="border-bottom:1px solid #24242a"><b>'+esc(r.reason||"Report")+'</b><div class="muted">'+esc(r.reportedUserId||"")+' '+esc(r.postId||"")+' '+esc(r.messageId||"")+'</div></div>').join("")||'<div class="empty">No reports.</div>'}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
+    async function ownerStats(){const b=$("#ownerPanel");try{const u=await ownerCall("listUsers"),[p,s,c]=await Promise.all([rows(T.posts,[Query.limit(500)]),rows(T.stories,[Query.limit(500)]),rows(T.comments,[Query.limit(500)])]);b.innerHTML='<div class="admin-grid"><div class="admin-stat"><b>'+((u.users||[]).length)+'</b><small>Users</small></div><div class="admin-stat"><b>'+p.length+'</b><small>Posts</small></div><div class="admin-stat"><b>'+s.length+'</b><small>Stories</small></div><div class="admin-stat"><b>'+c.length+'</b><small>Comments</small></div></div>'}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
+    async function ownerRefresh(){await refreshProfiles();renderShell();openOwnerDashboard();toast("Refreshed")}
+    function renderPeopleSide(){const x=$("#peopleSide");if(!x)return;x.innerHTML=profiles.filter(p=>p.userId!==me.$id).slice(0,8).map(p=>'<button class="user-row" style="padding:8px 0" onclick="showPage(\'user\',\''+esc(p.userId)+'\')">'+avatar(p,"sm")+'<div class="user-info"><b>'+esc(p.username)+badge(p)+'</b></div></button>').join("")||'<small class="muted">No other users yet.</small>'}
 
-async function boot(){
- try{me=await account.get()}catch{authView("login");return}
- try{await ensureProfile();await refreshProfiles();renderShell();await updatePresence(true);await renderNotificationBadge();await loadFeed();await subscribeAll()}
- catch(e){console.error(e);document.getElementById("app").innerHTML='<div class="auth"><div class="auth-card"><div class="logo">NOVA<span>.</span></div><p class="muted">NOVA could not finish loading.</p><button class="primary" onclick="location.reload()">Retry</button></div></div>'}
-}
+    async function boot(){
+     try{me=await account.get()}catch{authView("login");return}
+     try{await ensureProfile();await refreshProfiles();renderShell();await updatePresence(true);await renderNotificationBadge();await loadFeed();await subscribeAll()}
+     catch(e){console.error(e);document.getElementById("app").innerHTML='<div class="auth"><div class="auth-card"><div class="logo">NOVA<span>.</span></div><p class="muted">NOVA could not finish loading.</p><button class="primary" onclick="location.reload()">Retry</button></div></div>'}
+    }
 
-Object.assign(window,{showPage,renderProfile,deletePost,reactPost,sharePost,toggleFollow,editProfile,editAvatar,sendText,sendMedia,toggleVoice,logout,createPost,createStory,createStoryFromComposer,renderCreateStory,renderPostComposer,deleteStory,openOwnerDashboard,ownerUsers,ownerReports,ownerPosts,ownerStories,ownerDeletePost,ownerDeleteStory,ownerStats,ownerVerify,ownerDisable,ownerDelete,viewMedia,blockUser,storyReact,storyReply,startPress,cancelPress,reactMessage,addComment,focusComment,postMenu,renderFollowList});
-window.addEventListener("error",e=>console.error(e.error||e.message));
-window.addEventListener("beforeunload",()=>{try{updatePresence(false)}catch{}});
-boot();
-})();
-</script>
-</body>
-</html>
+    Object.assign(window,{showPage,renderProfile,deletePost,reactPost,sharePost,toggleFollow,editProfile,editAvatar,sendText,sendMedia,toggleVoice,logout,createPost,createStory,createStoryFromComposer,renderCreateStory,renderPostComposer,deleteStory,openOwnerDashboard,ownerUsers,ownerReports,ownerPosts,ownerStories,ownerDeletePost,ownerDeleteStory,ownerStats,ownerVerify,ownerDisable,ownerDelete,viewMedia,blockUser,storyReact,storyReply,startPress,cancelPress,reactMessage,addComment,focusComment,postMenu,renderFollowList});
+    window.addEventListener("error",e=>console.error(e.error||e.message));
+    window.addEventListener("beforeunload",()=>{try{updatePresence(false)}catch{}});
+    boot();
+    })();
+    </script>
+    </body>
+    </html>
