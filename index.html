@@ -58,7 +58,7 @@ header{height:58px;border-bottom:1px solid #262626;display:flex;align-items:cent
  <form id="chatForm" class="chat-input"><input id="chatInput" autocomplete="off" placeholder="Message..."><button class="send" aria-label="Send"><svg class="icon sm" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/appwrite@21.0.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/appwrite@23.0.0"></script>
 <script>
 /*
  NOVA Social — clean Appwrite foundation.
@@ -93,7 +93,8 @@ function initials(name){return (name||"N").trim().slice(0,1).toUpperCase()}
 function avatarHTML(u,cls="avatar"){return `<div class="${cls}">${u?.avatar?`<img src="${esc(u.avatar)}" alt="">`:esc(initials(u?.displayName||u?.username))}</div>`}
 
 async function loadSDK(){
-  sdk=window.Appwrite;
+  // Load the official Web SDK as ESM so Realtime is guaranteed to be available.
+  sdk=await import("https://cdn.jsdelivr.net/npm/appwrite@23.0.0/+esm");
   const client=new sdk.Client().setEndpoint(CFG.endpoint).setProject(CFG.projectId);
   account=new sdk.Account(client);
   databases=new sdk.TablesDB(client);
@@ -224,10 +225,10 @@ async function loadConversationMessages(){
  renderChatMessages();
  subscribeToMessages();
 }
-function subscribeToMessages(){
+async function subscribeToMessages(){
  if(realtimeUnsubscribe)try{realtimeUnsubscribe()}catch{}
  try{
-  realtimeUnsubscribe=realtime.subscribe(
+  realtimeUnsubscribe=await realtime.subscribe(
    `tablesdb.${CFG.databaseId}.tables.${CFG.tables.messages}.rows`,
    event=>{
     const m=event.payload;
