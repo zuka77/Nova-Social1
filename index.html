@@ -12,7 +12,7 @@ button,input,textarea{font:inherit}button{border:0;background:none;color:inherit
 .auth{min-height:100dvh;display:grid;place-items:center;padding:20px}.auth-card{width:min(430px,100%);background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 90px #0009}.logo{font-size:32px;font-weight:950;letter-spacing:-1.7px}.logo span{color:var(--accent)}.muted{color:var(--muted)}
 .field{margin:10px 0}.field input,.field textarea,.search input,.composer textarea,.chat-compose textarea{width:100%;background:#17171c;border:1px solid #2a2a31;color:#fff;border-radius:14px;padding:13px;outline:0}.field input:focus,.field textarea:focus,.search input:focus,.composer textarea:focus,.chat-compose textarea:focus{border-color:var(--accent)}
 .primary{width:100%;padding:13px 16px;border-radius:14px;background:var(--accent);font-weight:850;margin-top:8px}.auth-switch{text-align:center;margin-top:18px;color:var(--muted);font-size:14px}.auth-switch button{font-weight:800}
-.top{position:sticky;top:0;z-index:30;height:62px;background:#050505ed;backdrop-filter:blur(20px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 15px}.top-actions,.toolrow{display:flex;gap:5px}.icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center}.icon:hover{background:#17171b}.icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.top{position:sticky;top:0;z-index:30;height:62px;background:#050505ed;backdrop-filter:blur(20px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 15px}.top-actions,.toolrow{display:flex;gap:5px}.top-actions .icon{position:relative}.icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center}.icon:hover{background:#17171b}.icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .layout{width:min(1160px,100%);margin:auto;display:grid;grid-template-columns:220px minmax(0,650px) 250px;gap:18px;padding:18px 14px 90px}.side{position:sticky;top:80px;height:max-content}.navbtn{width:100%;display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;color:#bbb;text-align:left}.navbtn:hover,.navbtn.active{background:#151519;color:#fff}.navbtn svg{width:22px;height:22px}.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;margin-bottom:14px;overflow:hidden}.pad{padding:15px}.section-title{font-size:19px;font-weight:900;margin:8px 0 13px}
 .stories{display:flex;gap:14px;overflow:auto;padding:15px}.story{min-width:68px;text-align:center;color:#aaa;font-size:11px}.story-ring{width:61px;height:61px;padding:2px;border-radius:50%;background:linear-gradient(135deg,#7657ff,#ff477e,#ffb14a);margin:auto}.story-ring img,.story-add{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid #0d0d10}.story-add{display:grid;place-items:center;background:#17171c;font-size:28px}
 .avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#222228;display:grid;place-items:center;color:#aaa;font-weight:850;flex:0 0 auto}.avatar.sm{width:35px;height:35px}.avatar.lg{width:92px;height:92px}.verified-badge{display:inline-flex;vertical-align:-4px;width:18px;height:18px;margin-left:4px}.verified-badge svg{width:18px;height:18px}.verified-badge circle{fill:var(--blue)}.verified-badge path{fill:none;stroke:#fff;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
@@ -148,7 +148,7 @@ function nav(){
  '<button class="navbtn" onclick="showPage(\'search\')">'+svg("search")+'<span class="label">Search</span></button>'+
  '<button class="navbtn" onclick="showPage(\'create\')">'+svg("plus")+'<span class="label">Create</span></button>'+
  '<button class="navbtn" onclick="showPage(\'messages\')">'+svg("send")+'<span class="label">Messages</span></button>'+
- '<button class="navbtn" onclick="showPage(\'notifications\')">'+svg("bell")+'<span class="label">Notifications</span></button>'+
+ '<button class="navbtn" onclick="showPage(\'notifications\')">'+svg("bell")+'<span class="label">Notifications</span><span data-notif-badge class="follow" style="display:none;padding:2px 6px;background:#ff4567;color:#fff"></span></button>'+
  '<button class="navbtn" onclick="showPage(\'profile\')">'+svg("user")+'<span class="label">Profile</span></button>'+
  (isOwner()?'<button class="navbtn" onclick="openOwnerDashboard()">'+svg("check")+'<span class="label">Owner</span></button>':"")+
  '<button class="navbtn" onclick="logout()">'+svg("logout")+'<span class="label">Log out</span></button>';
@@ -156,7 +156,7 @@ function nav(){
 function renderShell(){
  document.getElementById("app").innerHTML='<div class="app"><header class="top"><button class="logo" onclick="showPage(\'home\')">NOVA<span>.</span></button><div class="top-actions">'+
  '<button class="icon" title="Search" onclick="showPage(\'search\')">'+svg("search")+'</button>'+
- '<button class="icon" title="Notifications" onclick="showPage(\'notifications\')">'+svg("bell")+'</button>'+
+ '<button class="icon" title="Notifications" onclick="showPage(\'notifications\')">'+svg("bell")+'<span data-notif-badge style="display:none;position:absolute;background:#ff4567;color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin:-27px 0 0 24px"></span></button>'+
  '<button class="icon" title="Profile" onclick="showPage(\'profile\')">'+svg("user")+'</button>'+
  (isOwner()?'<button class="icon" title="Owner" onclick="openOwnerDashboard()">'+svg("check")+'</button>':"")+
  '</div></header><div class="layout"><aside class="side left-side">'+nav()+'</aside><main id="main"></main><aside class="side right-side"><div class="card pad"><b>People on NOVA</b><div id="peopleSide"></div></div></aside></div>'+
@@ -168,6 +168,7 @@ async function showPage(page,arg=null){
  if(page==="home")return loadFeed();
  if(page==="search")return renderSearch();
  if(page==="create")return renderCreate();
+ if(page==="createStory")return renderCreateStory();
  if(page==="messages")return renderMessages();
  if(page==="chat")return openChat(arg);
  if(page==="notifications")return renderNotifications();
@@ -175,6 +176,8 @@ async function showPage(page,arg=null){
  if(page==="stories")return renderStories();
  if(page==="user")return renderProfile(arg);
  if(page==="owner")return openOwnerDashboard();
+ if(page==="followers")return renderFollowList(arg,"followers");
+ if(page==="following")return renderFollowList(arg,"following");
 }
 
 async function loadFeed(){
@@ -215,9 +218,47 @@ async function sharePost(id){try{await navigator.clipboard?.writeText(location.h
 
 function renderCreate(){
  postFiles=[];
- $("#main").innerHTML='<div class="section-title">Create post</div><div class="card pad composer"><div class="composer-head">'+avatar(myProfile)+'<div><b>'+esc(myProfile.displayName||myProfile.username)+badge(myProfile)+'</b><div class="muted">Share with NOVA</div></div></div><textarea id="postText" placeholder="What’s happening?"></textarea><div id="postPreview" class="preview-grid"></div><div class="composer-tools"><div class="toolrow"><button class="icon" title="Photo / video" onclick="$(\'#mediaInput\').click()">'+svg("image")+'</button><input id="mediaInput" type="file" accept="image/*,video/*" multiple hidden></div><button class="primary" style="width:auto;margin:0" onclick="createPost()">Post</button></div></div>';
+ $("#main").innerHTML='<div class="section-title">Create</div>'+
+ '<div class="card pad"><div style="display:grid;gap:10px">'+
+ '<button class="primary" style="margin:0" onclick="renderPostComposer()">Create post</button>'+
+ '<button class="primary" style="margin:0;background:#202027" onclick="renderCreateStory()">Create story</button>'+
+ '</div></div><div id="createArea"></div>';
+ renderPostComposer();
+}
+function renderPostComposer(){
+ postFiles=[];
+ const area=$("#createArea");if(!area)return;
+ area.innerHTML='<div class="card pad composer"><div class="composer-head">'+avatar(myProfile)+'<div><b>'+esc(myProfile.displayName||myProfile.username)+badge(myProfile)+'</b><div class="muted">New post</div></div></div>'+
+ '<textarea id="postText" placeholder="What’s happening?"></textarea><div id="postPreview" class="preview-grid"></div>'+
+ '<div class="composer-tools"><button class="icon" title="Photo / video" onclick="$(\'#mediaInput\').click()">'+svg("image")+'</button><input id="mediaInput" type="file" accept="image/*,video/*" multiple hidden>'+
+ '<button class="primary" style="width:auto;margin:0" onclick="createPost()">Post</button></div></div>';
  $("#mediaInput").onchange=e=>{postFiles=[...e.target.files];$("#postPreview").innerHTML=postFiles.map(f=>f.type.startsWith("video")?'<video src="'+URL.createObjectURL(f)+'" controls></video>':'<img src="'+URL.createObjectURL(f)+'">').join("")}
 }
+function renderCreateStory(){
+ storyFiles=[];
+ const area=$("#createArea");if(!area)return;
+ area.innerHTML='<div class="card pad composer"><div class="composer-head">'+avatar(myProfile)+'<div><b>'+esc(myProfile.displayName||myProfile.username)+badge(myProfile)+'</b><div class="muted">New story · 24 hours</div></div></div>'+
+ '<textarea id="storyText" placeholder="Write a story…"></textarea><div id="storyPreview" class="preview-grid"></div>'+
+ '<div class="composer-tools"><button class="icon" title="Photo / video" onclick="$(\'#storyInput\').click()">'+svg("image")+'</button><input id="storyInput" type="file" accept="image/*,video/*" multiple hidden>'+
+ '<button class="primary" style="width:auto;margin:0" onclick="createStoryFromComposer()">Share story</button></div></div>';
+ $("#storyInput").onchange=e=>{storyFiles=[...e.target.files];$("#storyPreview").innerHTML=storyFiles.map(f=>f.type.startsWith("video")?'<video src="'+URL.createObjectURL(f)+'" controls></video>':'<img src="'+URL.createObjectURL(f)+'">').join("")}
+}
+async function createStoryFromComposer(){
+ try{
+  const content=$("#storyText")?.value.trim()||"";
+  if(!content&&!storyFiles.length)return toast("Write something or add media");
+  const s=await create(T.stories,{userId:me.$id,content,media:"",mediaType:"",createdAt:now(),expiresAt:new Date(Date.now()+86400000).toISOString()});
+  let first="",firstType="";
+  for(let i=0;i<storyFiles.length;i++){
+   const f=storyFiles[i],url=await upload(f),type=f.type.startsWith("video")?"video":"image";
+   if(i===0){first=url;firstType=type}
+   await create(T.story_media,{storyId:s.$id,media:url,mediaType:type,sortOrder:i,createdAt:now()});
+  }
+  if(first)await update(T.stories,s.$id,{media:first,mediaType:firstType});
+  storyFiles=[];toast("Story shared");await renderStories();
+ }catch(e){fail(e)}
+}
+
 async function createPost(){
  try{
   const content=$("#postText").value.trim();if(!content&&!postFiles.length)return toast("Write something or add media");
@@ -229,7 +270,7 @@ async function createPost(){
  }catch(e){fail(e)}
 }
 
-function userRow(p,button=true){return '<button class="user-row" onclick="showPage(\'user\',\''+esc(p.userId)+'\')">'+avatar(p)+'<div class="user-info"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><small>@'+esc(p.username)+'</small></div>'+(button?'<span class="follow" onclick="event.stopPropagation();toggleFollow(\''+esc(p.userId)+'\',this)">Follow</span>':"")+'</button>'}
+function userRow(p,button=true){return '<div class="user-row" onclick="showPage(\'user\',\''+esc(p.userId)+'\')">'+avatar(p)+'<div class="user-info"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><small>@'+esc(p.username)+'</small></div>'+(button?'<button class="follow" onclick="event.stopPropagation();toggleFollow(\''+esc(p.userId)+'\',this)">Follow</button>':"")+'</div>'}
 function renderSearch(){
  $("#main").innerHTML='<div class="section-title">Search</div><div class="search"><input id="userSearch" placeholder="Search people…"></div><div class="card" id="searchResults"></div>';
  const run=()=>{const q=$("#userSearch").value.toLowerCase().trim(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#searchResults").innerHTML=arr.map(p=>userRow(p)).join("")||'<div class="empty">No users found.</div>'};$("#userSearch").oninput=run;run()
@@ -243,18 +284,52 @@ async function renderProfile(id){
  const followers=await rows(T.follows,[Query.equal("followingId",id),Query.limit(500)]).catch(()=>[]);
  const following=await rows(T.follows,[Query.equal("followerId",id),Query.limit(500)]).catch(()=>[]);
  const posts=await rows(T.posts,[Query.equal("userId",id),Query.orderDesc("$createdAt"),Query.limit(100)]).catch(()=>[]);
- $("#main").innerHTML='<div class="card"><div class="profile-cover"></div><div class="profile-main">'+avatar(p,"lg")+'<div class="profile-name">'+esc(p.displayName||p.username)+badge(p)+'</div><div class="muted">@'+esc(p.username)+'</div><div class="profile-bio">'+esc(p.bio||"")+'</div><div class="stats"><div><b>'+followers.length+'</b><span>Followers</span></div><div><b>'+following.length+'</b><span>Following</span></div><div><b>'+posts.length+'</b><span>Posts</span></div></div><div class="profile-actions">'+
+ $("#main").innerHTML='<div class="card"><div class="profile-cover"></div><div class="profile-main">'+avatar(p,"lg")+'<div class="profile-name">'+esc(p.displayName||p.username)+badge(p)+'</div><div class="muted">@'+esc(p.username)+'</div><div class="profile-bio">'+esc(p.bio||"")+'</div><div class="stats"><button onclick="showPage(\'followers\',\''+esc(id)+'\')" style="text-align:left"><b>'+followers.length+'</b><span>Followers</span></button><button onclick="showPage(\'following\',\''+esc(id)+'\')" style="text-align:left"><b>'+following.length+'</b><span>Following</span></button><div><b>'+posts.length+'</b><span>Posts</span></div></div><div class="profile-actions">'+
  (id===me.$id?'<button onclick="editProfile()">Edit profile</button><button onclick="editAvatar()">Change photo</button>':'<button class="primary" style="width:auto;margin:0" onclick="toggleFollow(\''+esc(id)+'\',this)">Follow</button><button onclick="showPage(\'chat\',\''+esc(id)+'\')">Message</button><button onclick="blockUser(\''+esc(id)+'\')">Block</button>')+
  '</div></div></div><div class="section-title">Posts</div><div id="profilePosts"></div>';
  $("#profilePosts").innerHTML=posts.length?await Promise.all(posts.map(renderPost)).then(a=>a.join("")):'<div class="card empty">No posts.</div>';
 }
-async function editProfile(){const name=prompt("Display name",myProfile.displayName||"");if(name===null)return;const bio=prompt("Bio",myProfile.bio||"");if(bio===null)return;try{myProfile=await update(T.profiles,myProfile.$id,{displayName:name,bio});await refreshProfiles();renderProfile(me.$id);toast("Profile updated")}catch(e){fail(e)}}
-async function editAvatar(){const input=document.createElement("input");input.type="file";input.accept="image/*";input.onchange=async()=>{try{const f=input.files[0];if(!f)return;const url=await upload(f);myProfile=await update(T.profiles,myProfile.$id,{avatar:url});await refreshProfiles();renderProfile(me.$id);toast("Photo updated")}catch(e){fail(e)}};input.click()}
+async function renderFollowList(id,type){
+ const p=findProfile(id)||await profile(id);if(!p)return toast("Profile not found");
+ const field=type==="followers"?"followingId":"followerId";
+ const title=type==="followers"?"Followers":"Following";
+ $("#main").innerHTML='<div class="section-title"><button class="icon" style="display:inline-grid;vertical-align:middle" onclick="showPage(\'profile\',\''+esc(id)+'\')">'+svg("back")+'</button> '+title+'</div><div class="card" id="followList"><div class="empty">Loading…</div></div>';
+ try{
+  const rs=await rows(T.follows,[Query.equal(field,id),Query.limit(500)]);
+  const ids=rs.map(x=>type==="followers"?x.followerId:x.followingId);
+  const ps=ids.map(findProfile).filter(Boolean);
+  $("#followList").innerHTML=ps.map(x=>userRow(x,true)).join("")||'<div class="empty">No '+title.toLowerCase()+'.</div>';
+ }catch(e){fail(e)}
+}
+async function editProfile(){
+ const name=prompt("Display name",myProfile.displayName||"");if(name===null)return;
+ const bio=prompt("Bio",myProfile.bio||"");if(bio===null)return;
+ const username=prompt("Username",myProfile.username||"");if(username===null)return;
+ try{
+  const clean=username.trim().replace(/[^a-zA-Z0-9_]/g,"").slice(0,30);
+  if(!clean)return toast("Invalid username");
+  myProfile=await update(T.profiles,myProfile.$id,{displayName:name.trim(),bio,username:clean});
+  await refreshProfiles();renderProfile(me.$id);toast("Profile updated");
+ }catch(e){fail(e)}
+}
+async function editAvatar(){
+ const input=document.createElement("input");input.type="file";input.accept="image/*";
+ input.onchange=async()=>{
+  try{
+   const f=input.files?.[0];if(!f)return;
+   if(!f.type.startsWith("image/"))return toast("Choose an image");
+   const url=await upload(f);
+   myProfile=await update(T.profiles,myProfile.$id,{avatar:url});
+   await refreshProfiles();renderShell();await renderProfile(me.$id);toast("Profile photo updated");
+  }catch(e){fail(e)}
+ };
+ input.click();
+}
 async function blockUser(id){try{await create(T.user_blocks,{userId:me.$id,blockedUserId:id,createdAt:now()});toast("Blocked")}catch(e){fail(e)}}
 
 async function renderMessages(){
  $("#main").innerHTML='<div class="section-title">Messages</div><div class="search"><input id="chatSearch" placeholder="Search people…"></div><div class="card" id="chatUsers"></div>';
- const draw=()=>{const q=$("#chatSearch").value.toLowerCase(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#chatUsers").innerHTML=arr.map(p=>userRow(p,false)).join("")||'<div class="empty">No users yet.</div>'};$("#chatSearch").oninput=draw;draw()
+ const draw=()=>{const q=$("#chatSearch").value.toLowerCase(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#chatUsers").innerHTML=arr.map(p=>'<button class="user-row" onclick="showPage(\'chat\',\''+esc(p.userId)+'\')">'+avatar(p)+'<div class="user-info"><b>'+esc(p.displayName||p.username)+badge(p)+'</b><small>@'+esc(p.username)+'</small></div></button>').join("")||'<div class="empty">No users yet.</div>'};$("#chatSearch").oninput=draw;draw()
 }
 async function findConversation(id){
  const mine=await rows(T.conversation_members,[Query.equal("userId",me.$id),Query.limit(500)]).catch(()=>[]);
@@ -288,20 +363,40 @@ async function sendText(){
  try{await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:text,media:"",mediaType:"",replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});await update(T.conversations,activeChat.$id,{lastMessage:text,lastMessageAt:now()}).catch(()=>{});el.value="";replyTarget=null;$("#replyBar").style.display="none";await loadMessages()}catch(e){fail(e)}
 }
 async function sendMedia(file){try{const url=await upload(file),type=file.type.startsWith("video")?"video":"image";await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:type,replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});await loadMessages()}catch(e){fail(e)}}
+function pickAudioMime(){
+ const list=["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"];
+ return list.find(x=>window.MediaRecorder?.isTypeSupported?.(x))||"";
+}
 async function toggleVoice(){
+ if(!activeChat)return;
  if(voiceRecorder?.state==="recording"){voiceRecorder.stop();return}
  try{
+  if(!navigator.mediaDevices?.getUserMedia)throw new Error("Voice recording is not supported in this browser");
   voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
-  voiceChunks=[];voiceRecorder=new MediaRecorder(voiceStream);$("#voiceBtn").classList.add("recording");
-  voiceRecorder.ondataavailable=e=>voiceChunks.push(e.data);
+  voiceChunks=[];
+  const mime=pickAudioMime();
+  voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);
+  const btn=$("#voiceBtn");btn?.classList.add("recording");
+  voiceRecorder.ondataavailable=e=>{if(e.data?.size)voiceChunks.push(e.data)};
+  voiceRecorder.onerror=e=>{console.error(e);voiceStream?.getTracks().forEach(t=>t.stop());btn?.classList.remove("recording")};
   voiceRecorder.onstop=async()=>{
-   voiceStream?.getTracks().forEach(t=>t.stop());$("#voiceBtn")?.classList.remove("recording");
-   const blob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||"audio/webm"});
-   try{const url=await upload(new File([blob],"voice-"+Date.now()+".webm",{type:blob.type}));await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:"audio",replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});await loadMessages()}catch(e){fail(e)}
+   voiceStream?.getTracks().forEach(t=>t.stop());btn?.classList.remove("recording");
+   const type=voiceRecorder.mimeType||mime||"audio/mp4";
+   const ext=type.includes("mp4")?"m4a":"webm";
+   const blob=new Blob(voiceChunks,{type});
+   try{
+    const file=new File([blob],"voice-"+Date.now()+"."+ext,{type});
+    const url=await upload(file);
+    await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:"audio",replyTo:replyTarget?.$id||"",createdAt:now(),deleted:false});
+    await update(T.conversations,activeChat.$id,{lastMessage:"Voice message",lastMessageAt:now()}).catch(()=>{});
+    replyTarget=null;if($("#replyBar"))$("#replyBar").style.display="none";
+    await loadMessages();toast("Voice message sent");
+   }catch(e){fail(e)}
   };
-  voiceRecorder.start();toast("Recording… press mic again to send")
+  voiceRecorder.start(250);toast("Recording… tap the mic again to send");
  }catch(e){fail(e)}
 }
+
 let pressTimer=null;
 function startPress(id){clearTimeout(pressTimer);pressTimer=setTimeout(()=>messageMenu(id),550)}
 function cancelPress(){clearTimeout(pressTimer)}
@@ -315,9 +410,25 @@ async function messageMenu(id){
 }
 async function reactMessage(id,reaction){try{await create(T.message_reactions,{messageId:id,userId:me.$id,reaction,createdAt:now()});toast(reaction)}catch(e){fail(e)}}
 
+async function getUnreadNotifications(){
+ return rows(T.notifications,[Query.equal("userId",me.$id),Query.equal("read",false),Query.limit(200)]).catch(()=>[]);
+}
+async function renderNotificationBadge(){
+ const n=await getUnreadNotifications();
+ document.querySelectorAll("[data-notif-badge]").forEach(x=>{x.textContent=n.length?String(Math.min(n.length,99)):"";x.style.display=n.length?"inline-block":"none"});
+}
 async function renderNotifications(){
  $("#main").innerHTML='<div class="section-title">Notifications</div><div class="card" id="notifs"><div class="empty">Loading…</div></div>';
- try{const ns=await rows(T.notifications,[Query.equal("userId",me.$id),Query.orderDesc("$createdAt"),Query.limit(200)]);$("#notifs").innerHTML=ns.map(n=>{const p=findProfile(n.fromUserId)||{};return '<div class="user-row">'+avatar(p,"sm")+'<div class="user-info"><b>'+esc(n.message||n.type)+badge(p)+'</b><small>'+ago(n.createdAt||n.$createdAt)+'</small></div></div>'}).join("")||'<div class="empty">No notifications.</div>'}catch(e){fail(e)}
+ try{
+  const ns=await rows(T.notifications,[Query.equal("userId",me.$id),Query.orderDesc("$createdAt"),Query.limit(200)]);
+  $("#notifs").innerHTML=ns.map(n=>{
+   const p=findProfile(n.fromUserId)||{};
+   const action=n.postId?'<button onclick="showPage(\'home\')">Open</button>':"";
+   return '<div class="user-row" style="border-bottom:1px solid #24242a">'+avatar(p,"sm")+'<div class="user-info"><b>'+esc(n.message||n.type)+badge(p)+'</b><small>'+ago(n.createdAt||n.$createdAt)+'</small></div>'+action+'</div>'
+  }).join("")||'<div class="empty">No notifications.</div>';
+  for(const n of ns.filter(x=>x.read===false))await update(T.notifications,n.$id,{read:true}).catch(()=>{});
+  await renderNotificationBadge();
+ }catch(e){fail(e)}
 }
 
 async function renderStories(){
@@ -348,7 +459,7 @@ async function subscribeAll(){
    Channel.tablesdb(CONFIG.databaseId).table(T.follows).row().create(),
    Channel.tablesdb(CONFIG.databaseId).table(T.reactions).row().create()
   ];
-  const sub=realtime.subscribe(channels,()=>{if(activeChat)loadMessages()});subscriptions.push(sub);
+  const sub=realtime.subscribe(channels,()=>{if(activeChat)loadMessages();renderNotificationBadge();});subscriptions.push(sub);
  }catch(e){console.warn("Realtime unavailable",e)}
 }
 async function logout(){try{await updatePresence(false);await account.deleteSession({sessionId:"current"});location.reload()}catch(e){fail(e)}}
@@ -356,8 +467,10 @@ function viewMedia(url){const m=document.createElement("div");m.className="modal
 
 async function openOwnerDashboard(){
  if(!isOwner())return toast("Owner access only");
- $("#main").innerHTML='<div class="section-title">Owner Dashboard</div><div class="card pad"><div style="display:flex;gap:7px;flex-wrap:wrap"><button onclick="ownerUsers()">Users</button><button onclick="ownerReports()">Reports</button><button onclick="ownerStats()">Stats</button><button onclick="ownerRefresh()">Refresh</button></div></div><div id="ownerPanel" class="card pad"><div class="empty">Loading…</div></div>';
- ownerUsers()
+ $("#main").innerHTML='<div class="section-title">Owner Dashboard</div><div class="card pad"><div style="display:flex;gap:7px;flex-wrap:wrap">'+
+ '<button onclick="ownerUsers()">Users</button><button onclick="ownerReports()">Reports</button><button onclick="ownerPosts()">Posts</button><button onclick="ownerStories()">Stories</button><button onclick="ownerStats()">Stats</button><button onclick="ownerRefresh()">Refresh</button></div></div>'+
+ '<div id="ownerPanel" class="card pad"><div class="empty">Choose a section.</div></div>';
+ ownerUsers();
 }
 async function ownerCall(action,extra={}){
  const r=await fetch(CONFIG.ownerFunction,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ownerId:CONFIG.ownerCode,action,...extra})});
@@ -371,6 +484,29 @@ function ownerRows(us){return us.map(u=>'<div class="user-row" style="border-bot
 async function ownerVerify(id){try{await ownerCall("verifyUser",{userId:id});const p=await profile(id);if(p)await update(T.profiles,p.$id,{verified:true});await refreshProfiles();toast("Verified");ownerUsers()}catch(e){fail(e)}}
 async function ownerDisable(id,status){try{await ownerCall("setUserStatus",{userId:id,status});ownerUsers()}catch(e){fail(e)}}
 async function ownerDelete(id){if(id===me.$id)return toast("Owner cannot delete current account");if(!confirm("Delete user?"))return;try{await ownerCall("deleteUser",{userId:id});ownerUsers()}catch(e){fail(e)}}
+async function ownerPosts(){
+ const b=$("#ownerPanel");if(!b)return;b.innerHTML="<div class='empty'>Loading posts…</div>";
+ try{
+  const ps=await rows(T.posts,[Query.orderDesc("$createdAt"),Query.limit(200)]);
+  b.innerHTML=ps.map(p=>{const u=findProfile(p.userId)||{};return '<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.displayName||u.username||p.userId)+badge(u)+'</b><small>'+esc((p.content||"").slice(0,120))+' · '+ago(p.createdAt||p.$createdAt)+'</small></div><button onclick="ownerDeletePost(\''+esc(p.$id)+'\')">'+svg("trash")+'</button></div>'}).join("")||'<div class="empty">No posts.</div>';
+ }catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+}
+async function ownerDeletePost(id){
+ if(!confirm("Delete this post and its media rows?"))return;
+ try{await remove(T.posts,id);const ms=await postMedia(id);for(const m of ms)await remove(T.post_media,m.$id).catch(()=>{});toast("Post deleted");ownerPosts()}catch(e){fail(e)}
+}
+async function ownerStories(){
+ const b=$("#ownerPanel");if(!b)return;b.innerHTML="<div class='empty'>Loading stories…</div>";
+ try{
+  const ss=await rows(T.stories,[Query.orderDesc("$createdAt"),Query.limit(200)]);
+  b.innerHTML=ss.map(s=>{const u=findProfile(s.userId)||{};return '<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>'+esc(u.displayName||u.username||s.userId)+badge(u)+'</b><small>'+esc((s.content||"").slice(0,100))+' · '+ago(s.createdAt||s.$createdAt)+'</small></div><button onclick="ownerDeleteStory(\''+esc(s.$id)+'\')">'+svg("trash")+'</button></div>'}).join("")||'<div class="empty">No stories.</div>';
+ }catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+}
+async function ownerDeleteStory(id){
+ if(!confirm("Delete this story and its media rows?"))return;
+ try{await remove(T.stories,id);const ms=await rows(T.story_media,[Query.equal("storyId",id),Query.limit(100)]).catch(()=>[]);for(const m of ms)await remove(T.story_media,m.$id).catch(()=>{});toast("Story deleted");ownerStories()}catch(e){fail(e)}
+}
+
 async function ownerReports(){const b=$("#ownerPanel");try{const d=await ownerCall("listReports"),rs=d.reports||[];b.innerHTML=rs.map(r=>'<div class="pad" style="border-bottom:1px solid #24242a"><b>'+esc(r.reason||"Report")+'</b><div class="muted">'+esc(r.reportedUserId||"")+' '+esc(r.postId||"")+' '+esc(r.messageId||"")+'</div></div>').join("")||'<div class="empty">No reports.</div>'}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
 async function ownerStats(){const b=$("#ownerPanel");try{const u=await ownerCall("listUsers"),[p,s,c]=await Promise.all([rows(T.posts,[Query.limit(500)]),rows(T.stories,[Query.limit(500)]),rows(T.comments,[Query.limit(500)])]);b.innerHTML='<div class="admin-grid"><div class="admin-stat"><b>'+((u.users||[]).length)+'</b><small>Users</small></div><div class="admin-stat"><b>'+p.length+'</b><small>Posts</small></div><div class="admin-stat"><b>'+s.length+'</b><small>Stories</small></div><div class="admin-stat"><b>'+c.length+'</b><small>Comments</small></div></div>'}catch(e){b.innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
 async function ownerRefresh(){await refreshProfiles();renderShell();openOwnerDashboard();toast("Refreshed")}
@@ -378,11 +514,11 @@ function renderPeopleSide(){const x=$("#peopleSide");if(!x)return;x.innerHTML=pr
 
 async function boot(){
  try{me=await account.get()}catch{authView("login");return}
- try{await ensureProfile();await refreshProfiles();renderShell();await updatePresence(true);await loadFeed();await subscribeAll()}
+ try{await ensureProfile();await refreshProfiles();renderShell();await updatePresence(true);await renderNotificationBadge();await loadFeed();await subscribeAll()}
  catch(e){console.error(e);document.getElementById("app").innerHTML='<div class="auth"><div class="auth-card"><div class="logo">NOVA<span>.</span></div><p class="muted">NOVA could not finish loading.</p><button class="primary" onclick="location.reload()">Retry</button></div></div>'}
 }
 
-Object.assign(window,{showPage,renderProfile,deletePost,reactPost,sharePost,toggleFollow,editProfile,editAvatar,sendText,sendMedia,toggleVoice,logout,createPost,createStory,deleteStory,openOwnerDashboard,ownerUsers,ownerReports,ownerStats,ownerVerify,ownerDisable,ownerDelete,viewMedia,blockUser,storyReact,storyReply,startPress,cancelPress,reactMessage,addComment,focusComment,postMenu});
+Object.assign(window,{showPage,renderProfile,deletePost,reactPost,sharePost,toggleFollow,editProfile,editAvatar,sendText,sendMedia,toggleVoice,logout,createPost,createStory,createStoryFromComposer,renderCreateStory,renderPostComposer,deleteStory,openOwnerDashboard,ownerUsers,ownerReports,ownerPosts,ownerStories,ownerDeletePost,ownerDeleteStory,ownerStats,ownerVerify,ownerDisable,ownerDelete,viewMedia,blockUser,storyReact,storyReply,startPress,cancelPress,reactMessage,addComment,focusComment,postMenu,renderFollowList});
 window.addEventListener("error",e=>console.error(e.error||e.message));
 window.addEventListener("beforeunload",()=>{try{updatePresence(false)}catch{}});
 boot();
