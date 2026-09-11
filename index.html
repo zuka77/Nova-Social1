@@ -33,425 +33,368 @@ button,input,textarea{font:inherit}button{border:0;color:inherit;background:none
 <body>
 <div id="app"></div>
 
+
+<style>
+@media(max-width:680px){#ownerDashboard{padding:8px}.mobile-nav{gap:0}.mobile-nav .icon{min-width:42px}}
+button{ -webkit-tap-highlight-color:transparent }
+audio{width:100%;max-width:280px}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/appwrite@23.0.0"></script>
 <script>
-(() => {
-"use strict";
+(()=>{"use strict";
 
-/* =========================
-   NOVA SOCIAL CONFIG
-   ========================= */
-const CONFIG = {
-  endpoint: "https://cloud.appwrite.io/v1",
-  projectId: "6aa242bf00012f890e92",
-  databaseId: "6aa41332002b049743d5",
-  bucketId: "6aa421b20025a1b4aac8",
-  ownerId: "Carlos-2839"
+/* ===================== NOVA SOCIAL — STABLE FULL BUILD ===================== */
+const CONFIG={
+  endpoint:"https://cloud.appwrite.io/v1",
+  projectId:"6aa242bf00012f890e92",
+  databaseId:"6aa41332002b049743d5",
+  bucketId:"6aa421b20025a1b4aac8",
+  ownerCode:"Carlos-2839",
+  ownerFunction:"https://6aa476550001ca179b26.fra.appwrite.run/"
 };
-
-const T = {
-  profiles:"profiles", posts:"posts", conversations:"conversations",
-  conversation_members:"conversation_members", messages:"messages",
-  message_reactions:"message_reactions", comments:"comments",
-  reactions:"reactions", follows:"follows", notifications:"notifications",
-  stories:"stories", story_views:"story_views", story_reactions:"story_reactions",
-  story_replies:"story_replies", user_presence:"user_presence", reports:"reports"
+const T={
+ profiles:"profiles",posts:"posts",post_media:"post_media",comments:"comments",
+ comment_reactions:"comment_reactions",reactions:"reactions",follows:"follows",
+ notifications:"notifications",stories:"stories",story_media:"story_media",
+ story_views:"story_views",story_reactions:"story_reactions",story_replies:"story_replies",
+ conversations:"conversations",conversation_members:"conversation_members",messages:"messages",
+ message_reactions:"message_reactions",user_presence:"user_presence",reports:"reports",
+ verification:"verification",admin_actions:"admin_actions",user_blocks:"user_blocks"
 };
-
-const {Client, Account, TablesDB, Storage, ID, Query, Permission, Role, Realtime, Channel} = Appwrite;
-const client = new Client().setEndpoint(CONFIG.endpoint).setProject(CONFIG.projectId);
-const account = new Account(client);
-const db = new TablesDB(client);
-const storage = new Storage(client);
-const realtime = new Realtime(client);
-
-let me = null, myProfile = null, profiles = [], activeChat = null, activeChatUser = null;
-let mediaFile = null, voiceRecorder = null, voiceChunks = [], voiceStart = 0, voiceTimer = null;
-let subscriptions = [];
-
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const timeAgo = d => { const n=Date.now()-new Date(d).getTime(); const m=Math.floor(n/60000); if(m<1)return"now"; if(m<60)return m+"m"; const h=Math.floor(m/60); if(h<24)return h+"h"; return Math.floor(h/24)+"d"; };
-const avatar = (p, cls="") => `<img class="avatar ${cls}" src="${esc(p?.avatar || "")}" onerror="this.style.display='none';this.nextElementSibling?.classList.remove('hidden')" /><span class="avatar ${cls} ${p?.avatar?'hidden':''}">${esc((p?.displayName||p?.username||"?").slice(0,1).toUpperCase())}</span>`;
-const svg = (name) => {
- const paths = {
- home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
- search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
- plus:'<path d="M12 5v14M5 12h14"/>',
- heart:'<path d="M20.8 8.6c0 5.4-8.8 10.4-8.8 10.4S3.2 14 3.2 8.6A4.6 4.6 0 0 1 12 6.3a4.6 4.6 0 0 1 8.8 2.3Z"/>',
- comment:'<path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-4-.9L4 19l.9-3.8A7.5 7.5 0 1 1 20 11.5Z"/>',
- send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
- bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
- user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
- back:'<path d="m15 18-6-6 6-6"/>',
- image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
- mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
- more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
- close:'<path d="M6 6l12 12M18 6 6 18"/>',
- play:'<path d="m8 5 11 7-11 7z"/>',
- trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
- users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'
- };
- return `<svg viewBox="0 0 24 24">${paths[name]||paths.more}</svg>`;
-};
-
-function toast(msg){const x=document.createElement("div");x.className="toast";x.textContent=msg;document.body.appendChild(x);setTimeout(()=>x.remove(),2500)}
+const {Client,Account,TablesDB,Storage,ID,Query,Realtime,Channel}=Appwrite;
+const client=new Client().setEndpoint(CONFIG.endpoint).setProject(CONFIG.projectId);
+const account=new Account(client),db=new TablesDB(client),storage=new Storage(client),realtime=new Realtime(client);
+let me=null,myProfile=null,profiles=[],activeChat=null,activeChatUser=null;
+let subscriptions=[],selectedPostMedia=[],selectedStoryMedia=[],voiceRecorder=null,voiceChunks=[],voiceStream=null;
+let replyTarget=null,messageLongPressTimer=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>ID.unique();
+const iso=()=>new Date().toISOString();
+const ago=d=>{const n=Math.max(0,Date.now()-new Date(d).getTime()),m=Math.floor(n/60000);if(m<1)return"now";if(m<60)return m+"m";const h=Math.floor(m/60);if(h<24)return h+"h";return Math.floor(h/24)+"d"};
+const initials=p=>(p?.displayName||p?.username||"?").slice(0,1).toUpperCase();
+function toast(s){const x=document.createElement("div");x.className="toast";x.textContent=s;document.body.appendChild(x);setTimeout(()=>x.remove(),2400)}
 function err(e){console.error(e);toast(e?.message||"Something went wrong")}
-function permissions(){return undefined}
-async function list(table, queries=[]){return (await db.listRows({databaseId:CONFIG.databaseId,tableId:table,queries})).rows||[]}
-async function create(table,data){return db.createRow({databaseId:CONFIG.databaseId,tableId:table,rowId:ID.unique(),data})}
-async function update(table,rowId,data){return db.updateRow({databaseId:CONFIG.databaseId,tableId:table,rowId,data})}
-async function remove(table,rowId){return db.deleteRow({databaseId:CONFIG.databaseId,tableId:table,rowId})}
-async function upload(file){
- const f=await storage.createFile({bucketId:CONFIG.bucketId,fileId:ID.unique(),file});
- return storage.getFileView({bucketId:CONFIG.bucketId,fileId:f.$id}).toString();
-}
-
-async function getProfile(uid){
- const r=await list(T.profiles,[Query.equal("userId",uid),Query.limit(1)]);
- return r[0]||null;
-}
+function svg(n){const p={
+home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+heart:'<path d="M20.8 8.6c0 5.4-8.8 10.4-8.8 10.4S3.2 14 3.2 8.6A4.6 4.6 0 0 1 12 6.3a4.6 4.6 0 0 1 8.8 2.3Z"/>',
+comment:'<path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-4-.9L4 19l.9-3.8A7.5 7.5 0 1 1 20 11.5Z"/>',
+send:'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+back:'<path d="m15 18-6-6 6-6"/>',
+image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>',
+mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
+more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+close:'<path d="M6 6l12 12M18 6 6 18"/>',
+trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
+check:'<path d="m5 12 4 4L19 6"/>',
+more2:'<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'
+};return`<svg viewBox="0 0 24 24">${p[n]||p.more}</svg>`}
+function avatar(p,cls=""){return p?.avatar?`<img class="avatar ${cls}" src="${esc(p.avatar)}" onerror="this.outerHTML='<span class=&quot;avatar ${cls}&quot;>${esc(initials(p))}</span>'">`:`<span class="avatar ${cls}">${esc(initials(p))}</span>`}
+async function list(t,q=[]){return(await db.listRows({databaseId:CONFIG.databaseId,tableId:t,queries:q})).rows||[]}
+async function create(t,data){return db.createRow({databaseId:CONFIG.databaseId,tableId:t,rowId:uid(),data})}
+async function update(t,id,data){return db.updateRow({databaseId:CONFIG.databaseId,tableId:t,rowId:id,data})}
+async function remove(t,id){return db.deleteRow({databaseId:CONFIG.databaseId,tableId:t,rowId:id})}
+async function upload(file){const f=await storage.createFile({bucketId:CONFIG.bucketId,fileId:uid(),file});return storage.getFileView({bucketId:CONFIG.bucketId,fileId:f.$id}).toString()}
+async function getProfile(id){return(await list(T.profiles,[Query.equal("userId",id),Query.limit(1)]))[0]||null}
 async function ensureProfile(){
- myProfile=await getProfile(me.$id);
- if(!myProfile){
-   const username=(me.name||me.email.split("@")[0]).replace(/[^a-zA-Z0-9_]/g,"").slice(0,30)||("user"+Date.now());
-   myProfile=await create(T.profiles,{userId:me.$id,username,displayName:me.name||username,email:me.email,verified:false,createdAt:new Date().toISOString()});
- }
+  myProfile=await getProfile(me.$id);
+  if(!myProfile){
+    let username=(me.name||me.email.split("@")[0]).replace(/[^a-zA-Z0-9_]/g,"").slice(0,30)||("user"+Date.now());
+    myProfile=await create(T.profiles,{userId:me.$id,username,displayName:me.name||username,email:me.email,avatar:"",bio:"",verified:false,createdAt:iso()});
+  }
 }
-async function refreshProfiles(){
- profiles=await list(T.profiles,[Query.orderDesc("$createdAt"),Query.limit(100)]);
-}
-
+async function refreshProfiles(){profiles=await list(T.profiles,[Query.orderDesc("$createdAt"),Query.limit(200)])}
+function owner(){return !!me&&me.prefs?.ownerCode===CONFIG.ownerCode}
 function authView(mode="login"){
- const signup=mode==="signup";
- $("#app").innerHTML=`<div class="auth"><div class="auth-card">
-   <div class="logo">NOVA<span>.</span></div>
-   <div class="auth-sub">${signup?"Create your NOVA account":"Welcome back to NOVA"}<div style="font-size:12px;color:#777;margin-top:6px">Email + password only · Owner ID is not required</div></div>
-   ${signup?`<div class="field"><input id="authName" placeholder="Name"></div>`:""}
-   <div class="field"><input id="authEmail" type="email" autocomplete="email" placeholder="Email"></div>
-   <div class="field"><input id="authPass" type="password" autocomplete="${signup?"new-password":"current-password"}" placeholder="Password"></div>
-   <button class="primary" id="authSubmit">${signup?"Create account":"Log in"}</button>
-   <div class="auth-switch">${signup?"Already have an account?":"Don't have an account?"} <button id="authSwitch">${signup?"Log in":"Sign up"}</button></div>
- </div></div>`;
- $("#authSubmit").onclick=async()=>{
-   try{
-     const email=$("#authEmail").value.trim(), pass=$("#authPass").value;
-     if(!email||!pass) return toast("Enter email and password");
-     if(signup){
-       const name=$("#authName").value.trim()||email.split("@")[0];
-       await account.create({userId:ID.unique(),email,password:pass,name});
-       await account.createEmailPasswordSession({email,password:pass});
-     }else await account.createEmailPasswordSession({email,password:pass});
-     await boot();
-   }catch(e){err(e)}
- };
- $("#authSwitch").onclick=()=>authView(signup?"login":"signup");
+  const signup=mode==="signup";
+  $("#app").innerHTML=`<div class="auth"><div class="auth-card">
+  <div class="logo">NOVA<span>.</span></div>
+  <div class="auth-sub">${signup?"Create your NOVA account":"Welcome back to NOVA"}</div>
+  ${signup?`<div class="field"><input id="authName" placeholder="Name" autocomplete="name"></div>`:""}
+  <div class="field"><input id="authEmail" type="email" placeholder="Email" autocomplete="email"></div>
+  <div class="field"><input id="authPass" type="password" placeholder="Password" autocomplete="${signup?"new-password":"current-password"}"></div>
+  ${signup?`<div class="field"><input id="ownerId" placeholder="Owner ID (optional)" autocomplete="off"></div>`:""}
+  <button class="primary" id="authSubmit">${signup?"Create account":"Log in"}</button>
+  <div class="auth-switch">${signup?"Already have an account?":"Don't have an account?"} <button id="authSwitch">${signup?"Log in":"Sign up"}</button></div>
+  </div></div>`;
+  $("#authSubmit").onclick=async()=>{
+    try{
+      const email=$("#authEmail").value.trim(),pass=$("#authPass").value;
+      if(!email||!pass)return toast("Enter email and password");
+      if(signup){
+        const name=$("#authName").value.trim()||email.split("@")[0];
+        const code=($("#ownerId")?.value||"").trim();
+        await account.create({userId:ID.unique(),email,password:pass,name});
+        await account.createEmailPasswordSession({email,password:pass});
+        if(code)await account.updatePrefs({ownerCode:code});
+      }else await account.createEmailPasswordSession({email,password:pass});
+      await boot();
+    }catch(e){err(e)}
+  };
+  $("#authSwitch").onclick=()=>authView(signup?"login":"signup");
 }
-
 async function boot(){
- try{me=await account.get()}catch{authView();return}
- await ensureProfile(); await refreshProfiles(); renderShell(); if(isOwnerAccount()){["ownerNavBtn","ownerTopBtn"].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display="";});} await loadFeed(); subscribeAll();
+  try{me=await account.get()}catch{authView("login");return}
+  try{await ensureProfile();await refreshProfiles();renderShell();await updatePresence(true);await loadFeed();await subscribeAll();if(owner())showOwnerButtons()}catch(e){err(e)}
 }
-
+function showOwnerButtons(){
+  ["ownerTopBtn","ownerNavBtn","ownerMobileBtn"].forEach(id=>{const b=document.getElementById(id);if(b)b.style.display="";});
+}
 function renderShell(){
- $("#app").innerHTML=`<div class="app">
- <header class="top"><button class="logo" onclick="showPage('home')">NOVA<span>.</span></button><div class="top-actions">
- <button class="icon" title="Search" onclick="showPage('search')">${svg("search")}</button>
- <button class="icon" title="Notifications" onclick="showPage('notifications')">${svg("bell")}</button>
- <button class="icon" title="Profile" onclick="showPage('profile')">${svg("user")}</button>
-   <button id="ownerTopBtn" class="icon" style="display:none" title="Owner" onclick="openOwnerDashboard()">👑</button>
- </div></header>
- <div class="layout">
-  <aside class="side left-side">
-   ${nav()}
-  </aside>
-  <main id="main"></main><main id="ownerDashboard" style="display:none">
-  <section class="card" style="margin:16px">
-    <div class="card-pad">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-        <div><h2 style="margin:0">👑 Owner Dashboard</h2><small>NOVA Social administration</small></div>
-        <button onclick="closeOwnerDashboard()">Back</button>
-      </div>
-    </div>
-  </section>
-  <section class="card" style="margin:16px">
-    <div class="card-pad">
-      <input id="ownerUserSearch" placeholder="Search users..." style="width:100%;box-sizing:border-box;padding:11px;border-radius:10px;border:1px solid #ccc;margin-bottom:10px">
-      <button onclick="ownerLoadUsers()">Refresh users</button>
-      <div id="ownerUsersList" style="margin-top:12px">Loading users...</div>
-    </div>
-  </section>
-</main>
-
-  <aside class="side right-side"><div class="card"><div class="card-pad"><b>People on NOVA</b><div id="peopleSide"></div></div></div></aside>
- </div>
- <nav class="mobile-nav">
-  <button class="icon" onclick="showPage('home')">${svg("home")}</button>
-  <button class="icon" onclick="showPage('search')">${svg("search")}</button>
-  <button class="icon" onclick="showPage('create')">${svg("plus")}</button>
-  <button class="icon" onclick="showPage('messages')">${svg("send")}</button>
-  <button class="icon" onclick="showPage('profile')">${svg("user")}</button>
-   <button class="icon" onclick="logout()" title="Log out">${svg("more")}</button>
- </nav>
- </div>`;
- renderPeopleSide();
+  $("#app").innerHTML=`<div class="app">
+  <header class="top"><button class="logo" onclick="showPage('home')">NOVA<span>.</span></button><div class="top-actions">
+  <button class="icon" title="Search" onclick="showPage('search')">${svg("search")}</button>
+  <button class="icon" title="Notifications" onclick="showPage('notifications')">${svg("bell")}</button>
+  <button class="icon" title="Profile" onclick="showPage('profile')">${svg("user")}</button>
+  <button id="ownerTopBtn" class="icon" style="display:none" title="Owner" onclick="openOwnerDashboard()">👑</button>
+  </div></header>
+  <div class="layout"><aside class="side left-side">${nav()}</aside><main id="main"></main><aside class="side right-side"><div class="card"><div class="card-pad"><b>People on NOVA</b><div id="peopleSide"></div></div></div></aside></div>
+  <nav class="mobile-nav">
+   <button class="icon" onclick="showPage('home')">${svg("home")}</button>
+   <button class="icon" onclick="showPage('search')">${svg("search")}</button>
+   <button class="icon" onclick="showPage('create')">${svg("plus")}</button>
+   <button class="icon" onclick="showPage('messages')">${svg("send")}</button>
+   <button class="icon" onclick="showPage('profile')">${svg("user")}</button>
+   <button id="ownerMobileBtn" class="icon" style="display:none" onclick="openOwnerDashboard()">👑</button>
+   <button class="icon" onclick="logout()" title="Log out">⇥</button>
+  </nav></div>`;
+  renderPeopleSide();
 }
-function nav(){return `<button class="navbtn active" data-page="home" onclick="showPage('home')">${svg("home")}<span class="label">Home</span></button>
+function nav(){return `<button class="navbtn active" onclick="showPage('home')">${svg("home")}<span class="label">Home</span></button>
 <button class="navbtn" onclick="showPage('search')">${svg("search")}<span class="label">Search</span></button>
 <button class="navbtn" onclick="showPage('create')">${svg("plus")}<span class="label">Create</span></button>
 <button class="navbtn" onclick="showPage('messages')">${svg("send")}<span class="label">Messages</span></button>
 <button class="navbtn" onclick="showPage('notifications')">${svg("bell")}<span class="label">Notifications</span></button>
 <button class="navbtn" onclick="showPage('profile')">${svg("user")}<span class="label">Profile</span></button>
- <button id="ownerNavBtn" class="navbtn" style="display:none" onclick="openOwnerDashboard()">👑<span class="label">Owner</span></button>
+<button id="ownerNavBtn" class="navbtn" style="display:none" onclick="openOwnerDashboard()">👑<span class="label">Owner</span></button>
 <button class="navbtn" onclick="logout()">${svg("more")}<span class="label">Log out</span></button>`}
-
 async function showPage(page,arg=null){
- if(page==="home") return loadFeed();
- if(page==="search") return renderSearch();
- if(page==="create") return renderCreate();
- if(page==="messages") return renderMessages();
- if(page==="chat") return openChat(arg);
- if(page==="notifications") return renderNotifications();
- if(page==="profile") return renderProfile(me.$id);
- if(page==="user") return renderProfile(arg);
- if(page==="stories") return renderStories();
+  if(page==="home")return loadFeed();
+  if(page==="search")return renderSearch();
+  if(page==="create")return renderCreate();
+  if(page==="messages")return renderMessages();
+  if(page==="chat")return openChat(arg);
+  if(page==="notifications")return renderNotifications();
+  if(page==="profile")return renderProfile(me.$id);
+  if(page==="user")return renderProfile(arg);
+  if(page==="stories")return renderStories();
+  if(page==="owner")return openOwnerDashboard();
 }
-
 async function loadFeed(){
- const main=$("#main"); if(!main)return;
- main.innerHTML=`<div class="card stories" id="stories"><div class="story" onclick="showPage('stories')"><div class="story-ring"><div class="story-add">+</div></div><div>Your story</div></div></div><div id="feed"><div class="empty">Loading…</div></div>`;
- try{
-   const posts=await list(T.posts,[Query.orderDesc("$createdAt"),Query.limit(50)]);
-   const feed=$("#feed"); feed.innerHTML=posts.length?posts.map(renderPost).join(""):`<div class="card empty">No posts yet. Find people and create the first post.</div>`;
-   await renderStoriesStrip();
- }catch(e){$("#feed").innerHTML=`<div class="card empty">Could not load feed.</div>`;err(e)}
+  $("#main").innerHTML=`<div class="card stories" id="stories"><button class="story" onclick="showPage('stories')"><div class="story-ring"><div class="story-add">+</div></div><div>Your story</div></button></div><div id="feed"><div class="empty">Loading…</div></div>`;
+  try{
+    const rows=await list(T.posts,[Query.orderDesc("$createdAt"),Query.limit(100)]);
+    $("#feed").innerHTML=rows.length?rows.map(renderPost).join(""):`<div class="card empty">No posts yet.</div>`;
+    await renderStoriesStrip();
+  }catch(e){$("#feed").innerHTML=`<div class="card empty">Could not load feed.</div>`}
 }
 async function renderStoriesStrip(){
- try{
-  const stories=await list(T.stories,[Query.orderDesc("$createdAt"),Query.limit(40)]);
-  const valid=stories.filter(s=>!s.expiresAt||new Date(s.expiresAt)>new Date());
-  const box=$("#stories"); if(!box)return;
-  for(const s of valid){
-   const p=profiles.find(x=>x.userId===s.userId)||await getProfile(s.userId);
-   if(!p)continue;
-   box.insertAdjacentHTML("beforeend",`<button class="story" onclick="showPage('stories')"><div class="story-ring">${avatar(p,"")}</div><div>${esc(p.username)}</div></button>`);
-  }
- }catch(e){console.warn(e)}
+  const box=$("#stories");if(!box)return;
+  try{
+    const rows=await list(T.stories,[Query.orderDesc("$createdAt"),Query.limit(50)]);
+    for(const s of rows.filter(x=>!x.expiresAt||new Date(x.expiresAt)>new Date())){
+      const p=profiles.find(x=>x.userId===s.userId);if(p)box.insertAdjacentHTML("beforeend",`<button class="story" onclick="showPage('stories')"><div class="story-ring">${avatar(p)}</div><div>${esc(p.username)}</div></button>`);
+    }
+  }catch{}
+}
+async function postMedia(postId){
+  return list(T.post_media,[Query.equal("postId",postId),Query.orderAsc("sortOrder"),Query.limit(20)]).catch(()=>[]);
 }
 function renderPost(p){
- const u=profiles.find(x=>x.userId===p.userId)||{username:"user"};
- const media=p.media?`<img class="post-media" src="${esc(p.media)}" alt="">`:"";
- return `<article class="card" data-post="${p.$id}">
- <div class="card-pad post-head">${avatar(u,"sm")}<div style="flex:1"><b>${esc(u.displayName||u.username)}</b><div style="font-size:12px;color:#888">@${esc(u.username)} · ${timeAgo(p.createdAt||p.$createdAt)}</div></div>
- ${p.userId===me.$id?`<button class="icon" onclick="deletePost('${p.$id}')">${svg("more")}</button>`:""}</div>
- ${p.content?`<div class="post-content">${esc(p.content)}</div>`:""}${media}
- <div class="post-meta"><span>Public post</span><span>♡</span></div>
- <div class="post-actions"><button onclick="reactPost('${p.$id}','❤️')">${svg("heart")}Like</button><button onclick="commentPost('${p.$id}')">${svg("comment")}Comment</button><button onclick="sharePost('${p.$id}')">${svg("send")}Share</button></div>
- </article>`;
+  const u=profiles.find(x=>x.userId===p.userId)||{username:"user"};
+  const own=p.userId===me.$id;
+  return `<article class="card" data-post="${p.$id}">
+  <div class="card-pad post-head">${avatar(u,"sm")}<div style="flex:1"><b>${esc(u.displayName||u.username)} ${u.verified?'✓':''}</b><div style="font-size:12px;color:#888">@${esc(u.username)} · ${ago(p.createdAt||p.$createdAt)}</div></div>${own?`<button class="icon" onclick="postMenu('${p.$id}')">${svg("more")}</button>`:""}</div>
+  ${p.content?`<div class="post-content">${esc(p.content)}</div>`:""}${p.media?mediaHtml(p.media,p.mediaType):""}
+  <div class="post-meta"><span>${p.userId===me.$id?"Your post":"Public post"}</span><span id="reactcount-${p.$id}">♡</span></div>
+  <div class="post-actions"><button onclick="reactPost('${p.$id}','❤️')">${svg("heart")}Like</button><button onclick="commentPost('${p.$id}')">${svg("comment")}Comment</button><button onclick="sharePost('${p.$id}')">${svg("send")}Share</button></div>
+  </article>`;
 }
-
+function mediaHtml(url,type=""){if(type==="video"||/\.(mp4|mov|webm)(\?|$)/i.test(url))return`<video class="post-media" src="${esc(url)}" controls playsinline></video>`;return`<img class="post-media" src="${esc(url)}" alt="" onclick="viewMedia('${esc(url)}')">`}
+function postMenu(id){const own=confirm("Delete this post?");if(own)deletePost(id)}
 function renderCreate(){
- $("#main").innerHTML=`<div class="section-title">Create post</div><div class="card card-pad composer">
- <div class="composer-head">${avatar(myProfile)}<div><b>${esc(myProfile.displayName||myProfile.username)}</b><div style="font-size:12px;color:#888">Share with NOVA</div></div></div>
- <textarea id="postText" placeholder="What's happening?"></textarea>
- <div id="postPreview"></div>
- <div class="composer-tools"><div class="toolrow">
- <button class="icon" title="Photo / video" onclick="$('#mediaInput').click()">${svg("image")}</button>
- <input id="mediaInput" type="file" accept="image/*,video/*" hidden>
- </div><button class="primary" style="width:auto;margin:0;padding:10px 18px" onclick="createPost()">Post</button></div>
- </div>`;
- $("#mediaInput").onchange=e=>{mediaFile=e.target.files[0];$("#postPreview").innerHTML=mediaFile?`<div style="margin-top:10px;color:#aaa">${esc(mediaFile.name)}</div>`:""};
+  selectedPostMedia=[];
+  $("#main").innerHTML=`<div class="section-title">Create post</div><div class="card card-pad composer">
+  <div class="composer-head">${avatar(myProfile)}<div><b>${esc(myProfile.displayName||myProfile.username)}</b><div style="font-size:12px;color:#888">Share with NOVA</div></div></div>
+  <textarea id="postText" placeholder="What's happening?"></textarea><div id="postPreview"></div>
+  <div class="composer-tools"><div class="toolrow"><button class="icon" title="Photo / video" onclick="$('#mediaInput').click()">${svg("image")}</button><input id="mediaInput" type="file" accept="image/*,video/*" multiple hidden></div><button class="primary" style="width:auto;margin:0;padding:10px 18px" onclick="createPost()">Post</button></div></div>`;
+  $("#mediaInput").onchange=e=>{selectedPostMedia=[...e.target.files];$("#postPreview").innerHTML=selectedPostMedia.map(f=>`<div style="margin-top:6px;color:#aaa">${esc(f.name)}</div>`).join("")}
 }
 async function createPost(){
- try{
-  const content=$("#postText").value.trim();
-  if(!content&&!mediaFile)return toast("Write something or add media");
-  let media=""; if(mediaFile)media=await upload(mediaFile);
-  await create(T.posts,{userId:me.$id,content,media,createdAt:new Date().toISOString()});
-  mediaFile=null; toast("Posted"); showPage("home");
- }catch(e){err(e)}
+  try{
+    const content=$("#postText").value.trim();if(!content&&!selectedPostMedia.length)return toast("Write something or add media");
+    let first="";
+    for(let i=0;i<selectedPostMedia.length;i++){const f=selectedPostMedia[i],url=await upload(f);if(i===0)first=url;await create(T.post_media,{postId:"PENDING",media:url,mediaType:f.type.startsWith("video")?"video":"image",sortOrder:i,createdAt:iso()})}
+    const p=await create(T.posts,{userId:me.$id,content,media:first,mediaType:selectedPostMedia[0]?.type.startsWith("video")?"video":"image",createdAt:iso()});
+    // Move auxiliary media to the actual post by deleting temporary rows.
+    const pending=await list(T.post_media,[Query.equal("postId","PENDING"),Query.limit(50)]).catch(()=>[]);
+    for(const m of pending){await update(T.post_media,m.$id,{postId:p.$id})}
+    selectedPostMedia=[];toast("Posted");showPage("home");
+  }catch(e){err(e)}
 }
-async function deletePost(id){if(!confirm("Delete this post?"))return;try{await remove(T.posts,id);toast("Deleted");loadFeed()}catch(e){err(e)}}
+async function deletePost(id){
+  if(!confirm("Delete this post?"))return;
+  try{await remove(T.posts,id);const ms=await postMedia(id);for(const m of ms)await remove(T.post_media,m.$id).catch(()=>{});toast("Deleted");loadFeed()}catch(e){err(e)}
+}
 async function reactPost(postId,reaction){
- try{await create(T.reactions,{postId,userId:me.$id,reaction,createdAt:new Date().toISOString()});toast(reaction)}
- catch(e){err(e)}
+  try{const old=await list(T.reactions,[Query.equal("postId",postId),Query.equal("userId",me.$id),Query.limit(1)]);if(old[0])await remove(T.reactions,old[0].$id);await create(T.reactions,{postId,userId:me.$id,reaction,createdAt:iso()});toast(reaction)}catch(e){err(e)}
 }
 async function commentPost(postId){
- const c=prompt("Comment"); if(!c?.trim())return;
- try{await create(T.comments,{postId,userId:me.$id,content:c.trim(),createdAt:new Date().toISOString()});toast("Comment added")}catch(e){err(e)}
+  const c=prompt("Comment");if(!c?.trim())return;
+  try{await create(T.comments,{postId,userId:me.$id,content:c.trim(),createdAt:iso()});toast("Comment added")}catch(e){err(e)}
 }
-async function sharePost(){navigator.clipboard?.writeText(location.href);toast("Link copied")}
-
+async function sharePost(){try{await navigator.clipboard?.writeText(location.href)}catch{}toast("Link copied")}
 function renderSearch(){
- $("#main").innerHTML=`<div class="section-title">Search</div><div class="search"><input id="userSearch" placeholder="Search people…"></div><div class="card" id="searchResults"></div>`;
- const run=()=>{const q=$("#userSearch").value.toLowerCase().trim();const arr=profiles.filter(p=>p.username.toLowerCase().includes(q)||(p.displayName||"").toLowerCase().includes(q));$("#searchResults").innerHTML=arr.length?arr.map(userRow).join(""):`<div class="empty">No users found.</div>`};
- $("#userSearch").oninput=run;run();
+  $("#main").innerHTML=`<div class="section-title">Search</div><div class="search"><input id="userSearch" placeholder="Search people…"></div><div class="card" id="searchResults"></div>`;
+  const run=()=>{const q=$("#userSearch").value.toLowerCase().trim(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#searchResults").innerHTML=arr.map(userRow).join("")||`<div class="empty">No users found.</div>`};
+  $("#userSearch").oninput=run;run()
 }
-function userRow(p){
- if(p.userId===me.$id)return "";
- return `<button class="user-row" style="width:100%;text-align:left" onclick="showPage('user','${p.userId}')">${avatar(p)}<div class="user-info"><b>${esc(p.displayName||p.username)} ${p.verified?'✓':''}</b><small>@${esc(p.username)}</small></div><span class="follow" onclick="event.stopPropagation();toggleFollow('${p.userId}',this)">Follow</span></button>`;
+function userRow(p){return`<button class="user-row" style="width:100%;text-align:left" onclick="showPage('user','${p.userId}')">${avatar(p)}<div class="user-info"><b>${esc(p.displayName||p.username)} ${p.verified?'✓':''}</b><small>@${esc(p.username)}</small></div><span class="follow" onclick="event.stopPropagation();toggleFollow('${p.userId}',this)">Follow</span></button>`}
+async function toggleFollow(id,el){
+  try{
+    const rows=await list(T.follows,[Query.equal("followerId",me.$id),Query.equal("followingId",id),Query.limit(1)]);
+    if(rows[0]){await remove(T.follows,rows[0].$id);el.classList.remove("on");el.textContent="Follow"}
+    else{await create(T.follows,{followerId:me.$id,followingId:id,createdAt:iso()});el.classList.add("on");el.textContent="Following";await create(T.notifications,{userId:id,fromUserId:me.$id,type:"follow",message:"started following you",createdAt:iso(),read:false})}
+  }catch(e){err(e)}
 }
-async function toggleFollow(uid,el){
- try{
-  const rows=await list(T.follows,[Query.equal("followerId",me.$id),Query.equal("followingId",uid),Query.limit(1)]);
-  if(rows[0]){try{await remove(T.follows,rows[0].$id)}catch{toast("Unfollow requires Delete permission")};el.classList.remove("on");el.textContent="Follow"}
-  else{await create(T.follows,{followerId:me.$id,followingId:uid,createdAt:new Date().toISOString()});el.classList.add("on");el.textContent="Following";await create(T.notifications,{userId:uid,fromUserId:me.$id,type:"follow",message:"started following you",createdAt:new Date().toISOString(),read:false})}
- }catch(e){err(e)}
-}
-
-async function renderProfile(uid){
- const p=uid===me.$id?myProfile:(profiles.find(x=>x.userId===uid)||await getProfile(uid));
- if(!p){toast("Profile not found");return}
- const followers=await list(T.follows,[Query.equal("followingId",uid),Query.limit(100)]).catch(()=>[]);
- const following=await list(T.follows,[Query.equal("followerId",uid),Query.limit(100)]).catch(()=>[]);
- const own=uid===me.$id;
- $("#main").innerHTML=`<div class="card"><div class="profile-cover"></div><div class="profile-main">${avatar(p,"profile-avatar")}
- <div class="profile-name">${esc(p.displayName||p.username)} ${p.verified?'✓':''}</div><div style="color:#888">@${esc(p.username)}</div><div class="profile-bio">${esc(p.bio||"")}</div>
- <div class="stats"><div><b>${followers.length}</b><span>Followers</span></div><div><b>${following.length}</b><span>Following</span></div></div>
- <div class="profile-actions">${own?`<button onclick="editProfile()">Edit profile</button>`:`<button class="primary-small" onclick="toggleFollow('${uid}',this)">Follow</button><button onclick="showPage('chat','${uid}')">Message</button>`}</div>
- </div></div><div class="section-title">Posts</div><div id="profilePosts"></div>`;
- const posts=await list(T.posts,[Query.equal("userId",uid),Query.orderDesc("$createdAt"),Query.limit(50)]).catch(()=>[]);
- $("#profilePosts").innerHTML=posts.length?posts.map(renderPost).join(""):`<div class="card empty">No posts.</div>`;
+async function renderProfile(id){
+  const p=id===me.$id?myProfile:(profiles.find(x=>x.userId===id)||await getProfile(id));if(!p)return toast("Profile not found");
+  const followers=await list(T.follows,[Query.equal("followingId",id),Query.limit(500)]).catch(()=>[]);
+  const following=await list(T.follows,[Query.equal("followerId",id),Query.limit(500)]).catch(()=>[]);
+  const own=id===me.$id;
+  $("#main").innerHTML=`<div class="card"><div class="profile-cover"></div><div class="profile-main">${avatar(p,"profile-avatar")}<div class="profile-name">${esc(p.displayName||p.username)} ${p.verified?'✓':''}</div><div style="color:#888">@${esc(p.username)}</div><div class="profile-bio">${esc(p.bio||"")}</div><div class="stats"><div><b>${followers.length}</b><span>Followers</span></div><div><b>${following.length}</b><span>Following</span></div></div><div class="profile-actions">${own?`<button onclick="editProfile()">Edit profile</button><button onclick="logout()">Log out</button>`:`<button class="primary-small" onclick="toggleFollow('${id}',this)">Follow</button><button onclick="showPage('chat','${id}')">Message</button><button onclick="blockUser('${id}')">Block</button>`}</div></div></div><div class="section-title">Posts</div><div id="profilePosts"></div>`;
+  const posts=await list(T.posts,[Query.equal("userId",id),Query.orderDesc("$createdAt"),Query.limit(100)]).catch(()=>[]);
+  $("#profilePosts").innerHTML=posts.map(renderPost).join("")||`<div class="card empty">No posts.</div>`;
 }
 async function editProfile(){
- const name=prompt("Display name",myProfile.displayName||"");if(name===null)return;
- const bio=prompt("Bio",myProfile.bio||"");if(bio===null)return;
- try{myProfile=await update(T.profiles,myProfile.$id,{displayName:name,bio});await refreshProfiles();renderProfile(me.$id);toast("Profile updated")}catch(e){err(e)}
+  const name=prompt("Display name",myProfile.displayName||"");if(name===null)return;
+  const bio=prompt("Bio",myProfile.bio||"");if(bio===null)return;
+  try{myProfile=await update(T.profiles,myProfile.$id,{displayName:name,bio});await refreshProfiles();renderProfile(me.$id);toast("Profile updated")}catch(e){err(e)}
 }
-
+async function blockUser(id){try{await create(T.user_blocks,{userId:me.$id,blockedUserId:id,createdAt:iso()});toast("Blocked")}catch(e){err(e)}}
 async function renderMessages(){
- $("#main").innerHTML=`<div class="section-title">Messages</div><div class="search"><input id="chatSearch" placeholder="Search people…"></div><div class="card" id="chatUsers"></div>`;
- const draw=()=>{const q=$("#chatSearch").value.toLowerCase();const arr=profiles.filter(p=>p.userId!==me.$id&&((p.username+" "+(p.displayName||"")).toLowerCase().includes(q)));$("#chatUsers").innerHTML=arr.map(p=>`<button class="user-row" style="width:100%;text-align:left" onclick="showPage('chat','${p.userId}')">${avatar(p)}<div class="user-info"><b>${esc(p.displayName||p.username)}</b><small>@${esc(p.username)}</small></div>${p.online?'<span style="color:var(--green)">●</span>':''}</button>`).join("")||`<div class="empty">No users yet.</div>`};
- $("#chatSearch").oninput=draw;draw();
+  $("#main").innerHTML=`<div class="section-title">Messages</div><div class="search"><input id="chatSearch" placeholder="Search people…"></div><div class="card" id="chatUsers"></div>`;
+  const draw=()=>{const q=$("#chatSearch").value.toLowerCase(),arr=profiles.filter(p=>p.userId!==me.$id&&(p.username+" "+(p.displayName||"")).toLowerCase().includes(q));$("#chatUsers").innerHTML=arr.map(p=>`<button class="user-row" style="width:100%;text-align:left" onclick="showPage('chat','${p.userId}')">${avatar(p)}<div class="user-info"><b>${esc(p.displayName||p.username)}</b><small>@${esc(p.username)} · ${p.userId===me.$id?"":""}</small></div></button>`).join("")||`<div class="empty">No users yet.</div>`};$("#chatSearch").oninput=draw;draw()
 }
-async function openChat(uid){
- activeChatUser=profiles.find(x=>x.userId===uid)||await getProfile(uid); if(!activeChatUser)return;
- let conv=await findConversation(uid);
- if(!conv){
-  conv=await create(T.conversations,{createdAt:new Date().toISOString(),type:"private",lastMessage:"",lastMessageAt:""});
-  await create(T.conversation_members,{conversationId:conv.$id,userId:me.$id,joinedAt:new Date().toISOString(),isAdmin:true});
-  await create(T.conversation_members,{conversationId:conv.$id,userId:uid,joinedAt:new Date().toISOString(),isAdmin:false});
- }
- activeChat=conv;
- $("#main").innerHTML=`<div class="chat-shell">
- <div class="chat-head"><button class="icon" onclick="showPage('messages')">${svg("back")}</button>${avatar(activeChatUser,"sm")}<div class="info"><b>${esc(activeChatUser.displayName||activeChatUser.username)}</b><small>${activeChatUser.online?"online":"@"+esc(activeChatUser.username)}</small></div><button class="icon">${svg("more")}</button></div>
- <div class="messages" id="messageList"><div class="empty">Loading…</div></div>
- <div class="chat-compose"><button class="icon" onclick="$('#chatMedia').click()">${svg("image")}</button><input id="chatMedia" type="file" accept="image/*,video/*" hidden><textarea id="chatText" rows="1" placeholder="Message…"></textarea><button class="icon" id="voiceBtn" title="Hold/press to record">${svg("mic")}</button><button class="send" onclick="sendText()">${svg("send")}</button></div>
- </div>`;
- $("#chatMedia").onchange=async e=>{if(e.target.files[0])await sendMedia(e.target.files[0])};
- $("#voiceBtn").onclick=toggleVoice;
- await loadMessages();
+async function findConversation(id){
+  const a=await list(T.conversation_members,[Query.equal("userId",me.$id),Query.limit(500)]).catch(()=>[]);
+  const b=await list(T.conversation_members,[Query.equal("userId",id),Query.limit(500)]).catch(()=>[]);
+  const set=new Set(b.map(x=>x.conversationId)),shared=a.find(x=>set.has(x.conversationId));
+  return shared?(await list(T.conversations,[Query.equal("$id",shared.conversationId),Query.limit(1)]))[0]:null
 }
-async function findConversation(uid){
- const mine=await list(T.conversation_members,[Query.equal("userId",me.$id),Query.limit(100)]).catch(()=>[]);
- const theirs=await list(T.conversation_members,[Query.equal("userId",uid),Query.limit(100)]).catch(()=>[]);
- const set=new Set(theirs.map(x=>x.conversationId));const shared=mine.find(x=>set.has(x.conversationId));
- return shared? (await list(T.conversations,[Query.equal("$id",shared.conversationId),Query.limit(1)]))[0] : null;
+async function openChat(id){
+  activeChatUser=profiles.find(x=>x.userId===id)||await getProfile(id);if(!activeChatUser)return;
+  let conv=await findConversation(id);
+  if(!conv){conv=await create(T.conversations,{createdAt:iso(),type:"private",lastMessage:"",lastMessageAt:""});await create(T.conversation_members,{conversationId:conv.$id,userId:me.$id,joinedAt:iso(),isAdmin:true});await create(T.conversation_members,{conversationId:conv.$id,userId:id,joinedAt:iso(),isAdmin:false})}
+  activeChat=conv;replyTarget=null;
+  $("#main").innerHTML=`<div class="chat-shell"><div class="chat-head"><button class="icon" onclick="showPage('messages')">${svg("back")}</button>${avatar(activeChatUser,"sm")}<div class="info"><b>${esc(activeChatUser.displayName||activeChatUser.username)}</b><small id="chatStatus">${activeChatUser.online?"online":"@"+esc(activeChatUser.username)}</small></div><button class="icon" onclick="chatInfo()">${svg("more")}</button></div><div id="replyBar" class="card-pad" style="display:none;border-bottom:1px solid var(--line);font-size:12px"></div><div class="messages" id="messageList"></div><div class="chat-compose"><button class="icon" onclick="$('#chatMedia').click()">${svg("image")}</button><input id="chatMedia" type="file" accept="image/*,video/*" multiple hidden><textarea id="chatText" rows="1" placeholder="Message…"></textarea><button class="icon" id="voiceBtn" title="Record voice">${svg("mic")}</button><button class="send" onclick="sendText()">${svg("send")}</button></div></div>`;
+  $("#chatMedia").onchange=async e=>{for(const f of [...e.target.files])await sendMedia(f)};
+  $("#voiceBtn").onclick=toggleVoice;
+  const tx=$("#chatText");tx.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText()}});
+  await loadMessages()
 }
 async function loadMessages(){
- const rows=await list(T.messages,[Query.equal("conversationId",activeChat.$id),Query.orderAsc("$createdAt"),Query.limit(100)]).catch(()=>[]);
- const box=$("#messageList");box.innerHTML=rows.length?rows.map(renderMessage).join(""):`<div class="empty">Start the conversation.</div>`;box.scrollTop=box.scrollHeight;
+  if(!activeChat)return;const rows=await list(T.messages,[Query.equal("conversationId",activeChat.$id),Query.orderAsc("$createdAt"),Query.limit(300)]).catch(()=>[]);
+  const box=$("#messageList");if(!box)return;box.innerHTML=rows.length?rows.map(renderMessage).join(""):`<div class="empty">Start the conversation.</div>`;box.scrollTop=box.scrollHeight
 }
 function renderMessage(m){
- const mine=m.senderId===me.$id;
- const media=m.media?(m.mediaType==="video"?`<video src="${esc(m.media)}" controls></video>`:`<img src="${esc(m.media)}">`):"";
- return `<div class="bubble-row ${mine?"me":""}"><div class="bubble">${media}${m.content?esc(m.content):""}${m.mediaType==="audio"?`<audio controls src="${esc(m.media)}"></audio>`:""}<small>${timeAgo(m.createdAt||m.$createdAt)} ${mine?"✓":""}</small></div></div>`;
+  const mine=m.senderId===me.$id;
+  const media=m.media?(m.mediaType==="video"?`<video src="${esc(m.media)}" controls playsinline></video>`:m.mediaType==="audio"?`<audio controls src="${esc(m.media)}"></audio>`:`<img src="${esc(m.media)}" onclick="viewMedia('${esc(m.media)}')">`):"";
+  const reply=m.replyTo?`<div style="font-size:11px;opacity:.65;border-left:2px solid #fff;padding-left:7px;margin-bottom:5px">Reply</div>`:"";
+  return `<div class="bubble-row ${mine?"me":""}" data-mid="${m.$id}" ontouchstart="startMessagePress('${m.$id}')" ontouchend="cancelMessagePress()" ondblclick="reactMessage('${m.$id}','❤️')"><div class="bubble">${reply}${media}${m.content?esc(m.content):""}<small>${ago(m.createdAt||m.$createdAt)} ${mine?"✓":""}</small></div></div>`
 }
 async function sendText(){
- const el=$("#chatText"), text=el.value.trim();if(!text||!activeChat)return;
- try{await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:text,media:"",mediaType:"",replyTo:"",createdAt:new Date().toISOString(),deleted:false});await update(T.conversations,activeChat.$id,{lastMessage:text,lastMessageAt:new Date().toISOString()}).catch(()=>{});el.value="";await loadMessages()}catch(e){err(e)}
+  const el=$("#chatText"),text=el?.value.trim();if(!text||!activeChat)return;
+  try{await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:text,media:"",mediaType:"",replyTo:replyTarget?.$id||"",createdAt:iso(),deleted:false});await update(T.conversations,activeChat.$id,{lastMessage:text,lastMessageAt:iso()}).catch(()=>{});el.value="";replyTarget=null;$("#replyBar").style.display="none";await loadMessages()}catch(e){err(e)}
 }
 async function sendMedia(file){
- try{const url=await upload(file);const type=file.type.startsWith("video")?"video":"image";await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:type,replyTo:"",createdAt:new Date().toISOString(),deleted:false});await loadMessages()}catch(e){err(e)}
+  try{const url=await upload(file),type=file.type.startsWith("video")?"video":"image";await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:type,replyTo:replyTarget?.$id||"",createdAt:iso(),deleted:false});await loadMessages()}catch(e){err(e)}
 }
 async function toggleVoice(){
- if(voiceRecorder&&voiceRecorder.state==="recording"){voiceRecorder.stop();return}
- if(!navigator.mediaDevices?.getUserMedia)return toast("Voice recording is not supported");
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  voiceChunks=[];voiceRecorder=new MediaRecorder(stream);voiceStart=Date.now();$("#voiceBtn").classList.add("recording");
-  voiceRecorder.ondataavailable=e=>voiceChunks.push(e.data);
-  voiceRecorder.onstop=async()=>{
-   clearInterval(voiceTimer);$("#voiceBtn").classList.remove("recording");stream.getTracks().forEach(t=>t.stop());
-   const blob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||"audio/webm"});const file=new File([blob],"voice-"+Date.now()+".webm",{type:blob.type});
-   try{const url=await upload(file);await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:"audio",replyTo:"",createdAt:new Date().toISOString(),deleted:false});await loadMessages()}catch(e){err(e)}
-  };
-  voiceRecorder.start();
- }catch(e){err(e)}
+  if(voiceRecorder?.state==="recording"){voiceRecorder.stop();return}
+  try{
+    voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    voiceChunks=[];voiceRecorder=new MediaRecorder(voiceStream);$("#voiceBtn").classList.add("recording");
+    voiceRecorder.ondataavailable=e=>voiceChunks.push(e.data);
+    voiceRecorder.onstop=async()=>{voiceStream?.getTracks().forEach(t=>t.stop());$("#voiceBtn").classList.remove("recording");const blob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||"audio/webm"});try{const url=await upload(new File([blob],"voice-"+Date.now()+".webm",{type:blob.type}));await create(T.messages,{conversationId:activeChat.$id,senderId:me.$id,content:"",media:url,mediaType:"audio",replyTo:replyTarget?.$id||"",createdAt:iso(),deleted:false});await loadMessages()}catch(e){err(e)}};
+    voiceRecorder.start();toast("Recording… press mic again to send")
+  }catch(e){err(e)}
 }
-
+function startMessagePress(id){clearTimeout(messageLongPressTimer);messageLongPressTimer=setTimeout(()=>messageMenu(id),550)}
+function cancelMessagePress(){clearTimeout(messageLongPressTimer)}
+async function messageMenu(id){
+  const rows=await list(T.messages,[Query.equal("$id",id),Query.limit(1)]).catch(()=>[]),m=rows[0];if(!m)return;
+  const action=prompt("Reply / Copy / Delete / React","Reply")?.toLowerCase();
+  if(action==="reply"){replyTarget=m;$("#replyBar").style.display="block";$("#replyBar").textContent="Replying to message";$("#chatText").focus()}
+  else if(action==="copy"){navigator.clipboard?.writeText(m.content||"");toast("Copied")}
+  else if(action==="delete"&&m.senderId===me.$id){await remove(T.messages,id).catch(e=>err(e));await loadMessages()}
+  else if(action==="react")await reactMessage(id,"❤️")
+}
+async function reactMessage(id,reaction){try{await create(T.message_reactions,{messageId:id,userId:me.$id,reaction,createdAt:iso()});toast(reaction)}catch(e){err(e)}}
+function chatInfo(){alert("Chat options: use long-press a message for Reply, Copy, Delete or Reaction.")}
 async function renderNotifications(){
- $("#main").innerHTML=`<div class="section-title">Notifications</div><div class="card" id="notifs"><div class="empty">Loading…</div></div>`;
- try{
-  const rows=await list(T.notifications,[Query.equal("userId",me.$id),Query.orderDesc("$createdAt"),Query.limit(100)]);
-  $("#notifs").innerHTML=rows.length?rows.map(n=>`<div class="user-row">${avatar(profiles.find(p=>p.userId===n.fromUserId))}<div class="user-info"><b>${esc(n.message||n.type)}</b><small>${timeAgo(n.createdAt||n.$createdAt)}</small></div></div>`).join(""):`<div class="empty">No notifications.</div>`;
- }catch(e){err(e)}
+  $("#main").innerHTML=`<div class="section-title">Notifications</div><div class="card" id="notifs"><div class="empty">Loading…</div></div>`;
+  try{const rows=await list(T.notifications,[Query.equal("userId",me.$id),Query.orderDesc("$createdAt"),Query.limit(200)]);$("#notifs").innerHTML=rows.map(n=>`<div class="user-row">${avatar(profiles.find(p=>p.userId===n.fromUserId),"sm")}<div class="user-info"><b>${esc(n.message||n.type)}</b><small>${ago(n.createdAt||n.$createdAt)}</small></div></div>`).join("")||`<div class="empty">No notifications.</div>`}catch(e){err(e)}
 }
 async function renderStories(){
- $("#main").innerHTML=`<div class="section-title">Stories</div><div class="card card-pad"><button class="primary" onclick="createStory()">＋ Add story</button></div><div id="storyViewer"></div>`;
- try{
-  const rows=await list(T.stories,[Query.orderDesc("$createdAt"),Query.limit(50)]);const box=$("#storyViewer");
-  box.innerHTML=rows.map(s=>{const p=profiles.find(x=>x.userId===s.userId)||{};return `<article class="card"><div class="card-pad post-head">${avatar(p,"sm")}<div><b>${esc(p.username||"user")}</b><div style="font-size:12px;color:#888">${timeAgo(s.createdAt||s.$createdAt)}</div></div></div>${s.media?`<img class="post-media" src="${esc(s.media)}">`:""}${s.content?`<div class="post-content">${esc(s.content)}</div>`:""}</article>`}).join("")||`<div class="card empty">No stories.</div>`;
- }catch(e){err(e)}
+  $("#main").innerHTML=`<div class="section-title">Stories</div><div class="card card-pad"><button class="primary" onclick="createStory()">＋ Add story</button></div><div id="storyViewer"></div>`;
+  try{const rows=await list(T.stories,[Query.orderDesc("$createdAt"),Query.limit(100)]),box=$("#storyViewer");box.innerHTML=rows.filter(s=>!s.expiresAt||new Date(s.expiresAt)>new Date()).map(s=>{const p=profiles.find(x=>x.userId===s.userId)||{};return`<article class="card"><div class="card-pad post-head">${avatar(p,"sm")}<div style="flex:1"><b>${esc(p.displayName||p.username||"user")}</b><div style="font-size:12px;color:#888">${ago(s.createdAt||s.$createdAt)}</div></div>${s.userId===me.$id?`<button class="icon" onclick="deleteStory('${s.$id}')">${svg("trash")}</button>`:""}</div>${s.media?mediaHtml(s.media,s.mediaType):""}${s.content?`<div class="post-content">${esc(s.content)}</div>`:`<div class="post-content"><button onclick="storyReact('${s.$id}','❤️')">❤️</button> <button onclick="storyReply('${s.$id}')">Reply</button></div>`}</article>`}).join("")||`<div class="card empty">No active stories.</div>`}catch(e){err(e)}
 }
 async function createStory(){
- const text=prompt("Story text (optional)")||"";const input=document.createElement("input");input.type="file";input.accept="image/*,video/*";input.onchange=async()=>{try{let media="";if(input.files[0])media=await upload(input.files[0]);await create(T.stories,{userId:me.$id,content:text,media,mediaType:input.files[0]?.type||"",createdAt:new Date().toISOString(),expiresAt:new Date(Date.now()+86400000).toISOString()});toast("Story added");renderStories()}catch(e){err(e)}};input.click();
+  const text=prompt("Story text (optional)")||"";const input=document.createElement("input");input.type="file";input.accept="image/*,video/*";input.multiple=true;
+  input.onchange=async()=>{try{const fs=[...input.files];let first="",firstType="";for(let i=0;i<fs.length;i++){const u=await upload(fs[i]);if(i===0){first=u;firstType=fs[i].type} }await create(T.stories,{userId:me.$id,content:text,media:first,mediaType:firstType,createdAt:iso(),expiresAt:new Date(Date.now()+86400000).toISOString()});toast("Story added");renderStories()}catch(e){err(e)}};input.click()
 }
-function renderPeopleSide(){const x=$("#peopleSide");if(x)x.innerHTML=profiles.filter(p=>p.userId!==me.$id).slice(0,5).map(p=>`<button class="user-row" style="width:100%;padding:8px 0" onclick="showPage('user','${p.userId}')">${avatar(p,"sm")}<div class="user-info"><b>${esc(p.username)}</b></div></button>`).join("")||`<small style="color:#888">No other users yet.</small>`}
-
+async function deleteStory(id){if(!confirm("Delete story?"))return;try{await remove(T.stories,id);renderStories()}catch(e){err(e)}}
+async function storyReact(id,r){try{await create(T.story_reactions,{storyId:id,userId:me.$id,reaction:r,createdAt:iso()});toast(r)}catch(e){err(e)}}
+async function storyReply(id){const c=prompt("Reply");if(!c?.trim())return;try{await create(T.story_replies,{storyId:id,userId:me.$id,content:c.trim(),createdAt:iso()});toast("Reply sent")}catch(e){err(e)}}
+async function updatePresence(online){
+  try{const rows=await list(T.user_presence,[Query.equal("userId",me.$id),Query.limit(1)]);const data={userId:me.$id,online,lastSeen:iso()};if(rows[0])await update(T.user_presence,rows[0].$id,data);else await create(T.user_presence,data)}catch{}
+}
 async function subscribeAll(){
- subscriptions.forEach(s=>{try{s.unsubscribe()}catch{}});subscriptions=[];
- try{
-  const s=realtime.subscribe([Channel.tablesdb(CONFIG.databaseId).table(T.messages).row().create()],()=>{if(activeChat)loadMessages()});
-  subscriptions.push(s);
- }catch(e){console.warn("Realtime subscription unavailable",e)}
+  subscriptions.forEach(s=>{try{s.unsubscribe()}catch{}});subscriptions=[];
+  const channels=[
+    Channel.tablesdb(CONFIG.databaseId).table(T.messages).row().create(),
+    Channel.tablesdb(CONFIG.databaseId).table(T.notifications).row().create(),
+    Channel.tablesdb(CONFIG.databaseId).table(T.follows).row().create(),
+    Channel.tablesdb(CONFIG.databaseId).table(T.reactions).row().create()
+  ];
+  try{subscriptions.push(realtime.subscribe(channels,()=>{if(activeChat)loadMessages()}))}catch(e){console.warn(e)}
 }
-const NOVA_OWNER_FUNCTION_URL = "https://6aa476550001ca179b26.fra.appwrite.run/";
-
-const NOVA_OWNER_CODE = "Carlos-2839";
-const NOVA_OWNER_FUNCTION_URL = "https://6aa476550001ca179b26.fra.appwrite.run/";
-let ownerUsersCache = [];
-
-function isOwnerAccount(){
-  return !!me && me.prefs?.ownerCode === NOVA_OWNER_CODE;
-}
-function openOwnerDashboard(){
-  if(!isOwnerAccount()){alert("Owner access only");return;}
-  const m=document.getElementById("main"),d=document.getElementById("ownerDashboard");
-  if(m)m.style.display="none"; if(d)d.style.display="";
-  ownerLoadUsers();
-}
-function closeOwnerDashboard(){
-  const d=document.getElementById("ownerDashboard"),m=document.getElementById("main");
-  if(d)d.style.display="none"; if(m)m.style.display="";
+async function logout(){try{await updatePresence(false);await account.deleteSession({sessionId:"current"});location.reload()}catch(e){err(e)}}
+function viewMedia(url){const m=document.createElement("div");m.className="modal";m.innerHTML=`<div class="modal-card" style="background:#000;text-align:center"><div class="modal-head"><b>Media</b><button onclick="this.closest('.modal').remove()">${svg("close")}</button></div><img src="${esc(url)}" style="max-height:80dvh;margin:auto;object-fit:contain"></div>`;document.body.appendChild(m)}
+async function openOwnerDashboard(){
+  if(!owner())return toast("Owner access only");
+  $("#main").innerHTML=`<div class="section-title">👑 Owner Dashboard</div>
+  <div class="card card-pad"><div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button onclick="ownerUsers()">👥 Users</button><button onclick="ownerReports()">🚨 Reports</button><button onclick="ownerStats()">📊 Stats</button><button onclick="ownerRefresh()">🔄 Refresh</button><button onclick="showPage('home')">Back</button></div></div>
+  <div id="ownerPanel" class="card card-pad"><div class="empty">Choose an Owner section.</div></div>`;
+  ownerUsers()
 }
 async function ownerCall(action,extra={}){
-  const r=await fetch(NOVA_OWNER_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ownerId:NOVA_OWNER_CODE,action,...extra})});
-  const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(d.message||d.error||"Owner Function error");
-  return d;
+  const r=await fetch(CONFIG.ownerFunction,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ownerId:CONFIG.ownerCode,action,...extra})});
+  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||d.error||"Owner Function error");return d
 }
-async function ownerLoadUsers(){
-  const box=document.getElementById("ownerUsersList");if(!box)return;
-  box.innerHTML="Loading users...";
-  try{const d=await ownerCall("listUsers");ownerUsersCache=d.users||[];ownerRenderUsers();}
-  catch(e){box.innerHTML=`<div style="color:#c00">${esc(e.message||e)}</div>`}
+async function ownerUsers(){
+  const box=$("#ownerPanel");if(!box)return;box.innerHTML="Loading users…";
+  try{const d=await ownerCall("listUsers"),users=d.users||[];box.innerHTML=`<input id="ownerSearch" placeholder="Search users..." style="width:100%;padding:11px;margin-bottom:10px;background:#17171c;color:#fff;border:1px solid #292930;border-radius:12px"><div id="ownerUsersList">${ownerUserRows(users)}</div>`;$("#ownerSearch").oninput=()=>{$("#ownerUsersList").innerHTML=ownerUserRows(users.filter(u=>(u.name+" "+u.email+" "+u.$id).toLowerCase().includes($("#ownerSearch").value.toLowerCase())))}}catch(e){box.innerHTML=`<div class="empty">${esc(e.message)}</div>`}
 }
-function ownerRenderUsers(){
-  const box=document.getElementById("ownerUsersList"),q=(document.getElementById("ownerUserSearch")?.value||"").toLowerCase();
-  const users=ownerUsersCache.filter(u=>`${u.name||""} ${u.email||""} ${u.$id||""}`.toLowerCase().includes(q));
-  box.innerHTML=users.length?users.map(u=>`<div style="padding:12px 0;border-bottom:1px solid #ddd"><b>${esc(u.name||"No name")}</b><br><small>${esc(u.email||"")} · ${esc(u.$id||"")}</small><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button onclick="ownerVerify('${esc(u.$id)}')">Verify</button><button onclick="ownerStatus('${esc(u.$id)}',${u.status===false})">${u.status===false?"Enable":"Disable"}</button><button onclick="ownerDelete('${esc(u.$id)}')">Delete</button></div></div>`).join(""):"No users found.";
-}
-async function ownerVerify(id){try{await ownerCall("verifyUser",{userId:id});await ownerLoadUsers()}catch(e){alert(e.message)}}
-async function ownerStatus(id,status){try{await ownerCall("setUserStatus",{userId:id,status});await ownerLoadUsers()}catch(e){alert(e.message)}}
-async function ownerDelete(id){if(!confirm("Delete this user?"))return;try{await ownerCall("deleteUser",{userId:id});await ownerLoadUsers()}catch(e){alert(e.message)}}
-document.addEventListener("input",e=>{if(e.target.id==="ownerUserSearch")ownerRenderUsers()});
-
-async function logout(){try{await account.deleteSession({sessionId:"current"});location.reload()}catch(e){err(e)}}
-
-window.openOwnerDashboard=openOwnerDashboard;window.closeOwnerDashboard=closeOwnerDashboard;window.showPage=showPage;window.renderProfile=renderProfile;window.deletePost=deletePost;window.reactPost=reactPost;window.commentPost=commentPost;window.sharePost=sharePost;window.toggleFollow=toggleFollow;window.editProfile=editProfile;window.sendText=sendText;window.sendMedia=sendMedia;window.toggleVoice=toggleVoice;window.logout=logout;window.createPost=createPost;window.createStory=createStory;
-
+function ownerUserRows(users){return users.map(u=>`<div class="user-row" style="border-bottom:1px solid #24242a"><div class="user-info"><b>${esc(u.name||"No name")}</b><small>${esc(u.email||"")} · ${esc(u.$id||"")}</small><small>Status: ${u.status===false?"Disabled":"Active"}</small></div><button onclick="ownerVerify('${esc(u.$id)}')">✓</button><button onclick="ownerDisable('${esc(u.$id)}',${u.status!==false})">${u.status===false?"Enable":"Disable"}</button><button onclick="ownerDelete('${esc(u.$id)}')">🗑</button></div>`).join("")||`<div class="empty">No users.</div>`}
+async function ownerVerify(id){try{await ownerCall("verifyUser",{userId:id});toast("Verified");ownerUsers()}catch(e){err(e)}}
+async function ownerDisable(id,status){try{await ownerCall("setUserStatus",{userId:id,status});ownerUsers()}catch(e){err(e)}}
+async function ownerDelete(id){if(id===me.$id)return toast("Owner cannot delete the current account");if(!confirm("Delete user?"))return;try{await ownerCall("deleteUser",{userId:id});ownerUsers()}catch(e){err(e)}}
+async function ownerReports(){const b=$("#ownerPanel");try{const d=await ownerCall("listReports"),rows=d.reports||[];b.innerHTML=rows.map(r=>`<div class="card-pad" style="border-bottom:1px solid #24242a"><b>${esc(r.reason||"Report")}</b><div style="font-size:12px;color:#888">${esc(r.reportedUserId||"")} ${esc(r.postId||"")}</div></div>`).join("")||`<div class="empty">No reports.</div>`}catch(e){b.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
+async function ownerStats(){const b=$("#ownerPanel");try{const [u,p,s,c]=await Promise.all([ownerCall("listUsers"),list(T.posts,[Query.limit(1)]),list(T.stories,[Query.limit(1)]),list(T.comments,[Query.limit(1)])]);b.innerHTML=`<div class="stats"><div><b>${(u.users||[]).length}</b><span>Users</span></div><div><b>${p.length}</b><span>Posts*</span></div><div><b>${s.length}</b><span>Stories*</span></div><div><b>${c.length}</b><span>Comments*</span></div></div><small>* Counts are limited by the current client query.</small>`}catch(e){b.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
+async function ownerRefresh(){await refreshProfiles();await ownerUsers();toast("Refreshed")}
+function chatBack(){showPage("messages")}
+function renderPeopleSide(){const x=$("#peopleSide");if(!x)return;x.innerHTML=profiles.filter(p=>p.userId!==me.$id).slice(0,8).map(p=>`<button class="user-row" style="width:100%;padding:8px 0" onclick="showPage('user','${p.userId}')">${avatar(p,"sm")}<div class="user-info"><b>${esc(p.username)}</b></div></button>`).join("")||`<small style="color:#888">No other users yet.</small>`}
+window.showPage=showPage;window.renderProfile=renderProfile;window.deletePost=deletePost;window.reactPost=reactPost;window.commentPost=commentPost;window.sharePost=sharePost;window.toggleFollow=toggleFollow;window.editProfile=editProfile;window.sendText=sendText;window.sendMedia=sendMedia;window.toggleVoice=toggleVoice;window.logout=logout;window.createPost=createPost;window.createStory=createStory;window.deleteStory=deleteStory;window.openOwnerDashboard=openOwnerDashboard;window.ownerUsers=ownerUsers;window.ownerReports=ownerReports;window.ownerStats=ownerStats;window.ownerVerify=ownerVerify;window.ownerDisable=ownerDisable;window.ownerDelete=ownerDelete;window.viewMedia=viewMedia;window.blockUser=blockUser;window.storyReact=storyReact;window.storyReply=storyReply;window.messageMenu=messageMenu;window.startMessagePress=startMessagePress;window.cancelMessagePress=cancelMessagePress;window.reactMessage=reactMessage;
+window.renderPeopleSide=renderPeopleSide;
 boot();
+window.addEventListener("beforeunload",()=>{try{updatePresence(false)}catch{}});
 })();
 </script>
 </body>
