@@ -58,7 +58,8 @@ header{height:58px;border-bottom:1px solid #262626;display:flex;align-items:cent
  <form id="chatForm" class="chat-input"><input id="chatInput" autocomplete="off" placeholder="Message..."><button class="send" aria-label="Send"><svg class="icon sm" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></form>
 </div>
 
-<script type="module">
+<script src="https://cdn.jsdelivr.net/npm/appwrite@21.0.0"></script>
+<script>
 /*
  NOVA Social — clean Appwrite foundation.
  The Appwrite Web SDK is loaded dynamically below.
@@ -81,8 +82,9 @@ const CFG={
  }
 };
 
-let sdk, account, databases, storage;
+let sdk, account, databases, storage, realtime;
 let currentUser=null, users=[], activeChatUser=null, messages=[];
+let activeConversationId=null, realtimeUnsubscribe=null;
 let signup=false;
 
 const $=id=>document.getElementById(id);
@@ -91,9 +93,12 @@ function initials(name){return (name||"N").trim().slice(0,1).toUpperCase()}
 function avatarHTML(u,cls="avatar"){return `<div class="${cls}">${u?.avatar?`<img src="${esc(u.avatar)}" alt="">`:esc(initials(u?.displayName||u?.username))}</div>`}
 
 async function loadSDK(){
- const m=await import("https://cdn.jsdelivr.net/npm/appwrite@21.0.0/+esm");
- sdk=m; const client=new m.Client().setEndpoint(CFG.endpoint).setProject(CFG.projectId);
- account=new m.Account(client); databases=new m.Databases(client); storage=new m.Storage(client);
+  sdk=window.Appwrite;
+  const client=new sdk.Client().setEndpoint(CFG.endpoint).setProject(CFG.projectId);
+  account=new sdk.Account(client);
+  databases=new sdk.TablesDB(client);
+  storage=new sdk.Storage(client);
+  realtime=new sdk.Realtime(client);
 }
 
 async function getSession(){
@@ -101,8 +106,8 @@ async function getSession(){
 }
 async function loadUsers(){
  try{
-  const r=await databases.listDocuments(CFG.databaseId,CFG.tables.profiles,[]);
-  users=r.documents;
+  const r=await databases.listRows({databaseId:CFG.databaseId,tableId:CFG.tables.profiles});
+  users=r.rows;
  }catch(e){console.warn("profiles read:",e.message);users=[]}
  renderUsers(); renderMessages(); renderSearch(); renderFeed();
 }
@@ -130,13 +135,13 @@ function setPage(p){
 }
 async function ensureProfile(){
  try{
-  const r=await databases.listDocuments(CFG.databaseId,CFG.tables.profiles,[]);
-  const found=r.documents.find(x=>x.userId===currentUser.$id);
+  const r=await databases.listRows({databaseId:CFG.databaseId,tableId:CFG.tables.profiles});
+  const found=r.rows.find(x=>x.userId===currentUser.$id);
   if(!found){
    const uname=(currentUser.name||currentUser.email.split("@")[0]).replace(/[^a-zA-Z0-9_]/g,"").slice(0,30)||"novauser";
-   await databases.createDocument(CFG.databaseId,CFG.tables.profiles,sdk.ID.unique(),{
+   await databases.createRow({databaseId:CFG.databaseId,tableId:CFG.tables.profiles,rowId:sdk.ID.unique(),data:{
     userId:currentUser.$id,username:uname,displayName:currentUser.name||uname,email:currentUser.email,verified:false,createdAt:new Date().toISOString()
-   });
+   }});
   }
  }catch(e){console.warn("profile:",e.message)}
 }
@@ -163,16 +168,116 @@ async function boot(){
  const me=users.find(u=>u.userId===currentUser.$id);
  if(me){$("profileName").textContent=me.displayName;$("profileBio").textContent=me.bio||"";$("profileAvatar").innerHTML=me.avatar?`<img src="${esc(me.avatar)}" alt="">`:esc(initials(me.displayName))}
 }
-async function openChat(u){
- if(!u)return;activeChatUser=u;$("chatName").textContent=u.displayName;$("chatAvatar").innerHTML=u.avatar?`<img src="${esc(u.avatar)}" alt="">`:esc(initials(u.displayName));$("chat").classList.add("open");await loadConversationMessages();
+function conversationIdFor(a,b){
+ const x=[String(a),String(b)].sort().join(":");
+ let h=2166136261;
+ for(let i=0;i<x.length;i++){h^=x.charCodeAt(i);h=Math.imul(h,16777619)}
+ return "conv_"+(h>>>0).toString(16).padStart(8,"0");
 }
-async function loadConversationMessages(){ $("chatBody").innerHTML=`<div class="empty">Start a conversation with ${esc(activeChatUser.displayName)}.</div>` }
+async function ensureConversation(otherUserId){
+ const cid=conversationIdFor(currentUser.$id,otherUserId);
+ try{
+  await databases.createRow({databaseId:CFG.databaseId,tableId:CFG.tables.conversations,rowId:cid,data:{
+   createdAt:new Date().toISOString(),type:"direct",lastMessage:"",lastMessageAt:""
+  }});
+ }catch(e){
+  if(!String(e.message||"").toLowerCase().includes("already exists") && !String(e.code||"").includes("409")) console.warn("conversation:",e.message);
+ }
+ for(const uid of [currentUser.$id,otherUserId]){
+  const memberId=conversationIdFor(cid,uid);
+  try{
+   await databases.createRow({databaseId:CFG.databaseId,tableId:CFG.tables.conversation_members,rowId:memberId,data:{
+    conversationId:cid,userId:uid,joinedAt:new Date().toISOString(),isAdmin:uid===currentUser.$id
+   }});
+  }catch(e){
+   if(!String(e.message||"").toLowerCase().includes("already exists") && !String(e.code||"").includes("409")) console.warn("member:",e.message);
+  }
+ }
+ return cid;
+}
+function renderChatMessages(){
+ const body=$("chatBody");
+ if(!messages.length){body.innerHTML=`<div class="empty">Start a conversation with ${esc(activeChatUser.displayName)}.</div>`;return}
+ body.innerHTML=messages.map(m=>{
+  const mine=m.senderId===currentUser.$id;
+  return `<div class="bubble-row ${mine?"me":""}"><div class="bubble">${esc(m.content||"")}</div></div>`;
+ }).join("");
+ body.scrollTop=body.scrollHeight;
+}
+async function loadConversationMessages(){
+ activeConversationId=await ensureConversation(activeChatUser.userId);
+ try{
+  const r=await databases.listRows({
+   databaseId:CFG.databaseId,
+   tableId:CFG.tables.messages,
+   queries:[
+    sdk.Query.equal("conversationId",[activeConversationId]),
+    sdk.Query.orderAsc("createdAt"),
+    sdk.Query.limit(100)
+   ]
+  });
+  messages=r.rows;
+ }catch(e){
+  console.warn("messages read:",e.message);
+  messages=[];
+ }
+ renderChatMessages();
+ subscribeToMessages();
+}
+function subscribeToMessages(){
+ if(realtimeUnsubscribe)try{realtimeUnsubscribe()}catch{}
+ try{
+  realtimeUnsubscribe=realtime.subscribe(
+   `tablesdb.${CFG.databaseId}.tables.${CFG.tables.messages}.rows`,
+   event=>{
+    const m=event.payload;
+    if(!m || m.conversationId!==activeConversationId)return;
+    const idx=messages.findIndex(x=>x.$id===m.$id);
+    if(event.events.some(x=>x.includes(".delete"))){
+      messages=messages.filter(x=>x.$id!==m.$id);
+    }else if(idx>=0){
+      messages[idx]=m;
+    }else{
+      messages.push(m);
+      messages.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
+    }
+    renderChatMessages();
+   }
+  );
+ }catch(e){console.warn("realtime:",e.message)}
+}
 $("authForm").onsubmit=e=>{e.preventDefault();signup?register():login()};
 $("switchBtn").onclick=()=>{signup=!signup;$("username").classList.toggle("hidden",!signup);$("authBtn").textContent=signup?"Sign up":"Log in";$("switchText").textContent=signup?"Already have an account?":"Don't have an account?";$("switchBtn").textContent=signup?"Log in":"Sign up";$("authMsg").textContent=""};
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>setPage(b.dataset.page));
 $("headerAction").onclick=()=>setPage("messages");
-$("closeChat").onclick=()=>$("chat").classList.remove("open");
-$("chatForm").onsubmit=e=>{e.preventDefault();const v=$("chatInput").value.trim();if(!v||!activeChatUser)return;const row=document.createElement("div");row.className="bubble-row me";row.innerHTML=`<div class="bubble">${esc(v)}</div>`;$("chatBody").appendChild(row);$("chatInput").value="";$("chatBody").scrollTop=$("chatBody").scrollHeight};
+$("closeChat").onclick=()=>{
+ $("chat").classList.remove("open");
+ if(realtimeUnsubscribe){try{realtimeUnsubscribe()}catch{}realtimeUnsubscribe=null}
+ activeConversationId=null;messages=[];
+};
+$("chatForm").onsubmit=async e=>{
+ e.preventDefault();
+ const v=$("chatInput").value.trim();
+ if(!v||!activeChatUser||!currentUser)return;
+ const btn=$("chatForm").querySelector(".send");
+ btn.disabled=true;
+ try{
+  if(!activeConversationId)activeConversationId=await ensureConversation(activeChatUser.userId);
+  await databases.createRow({databaseId:CFG.databaseId,tableId:CFG.tables.messages,rowId:sdk.ID.unique(),data:{
+   conversationId:activeConversationId,
+   senderId:currentUser.$id,
+   content:v,
+   media:"",
+   mediaType:"",
+   replyTo:"",
+   createdAt:new Date().toISOString(),
+   deleted:false
+  }});
+  $("chatInput").value="";
+ }catch(err){
+  alert("Message could not be sent: "+err.message);
+ }finally{btn.disabled=false}
+};
 
 (async()=>{try{await loadSDK();if(await getSession())await boot()}catch(e){$("authMsg").textContent="Appwrite connection error: "+e.message}})();
 </script>
