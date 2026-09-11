@@ -81,8 +81,9 @@ const CFG={
  }
 };
 
-let sdk, account, databases, storage;
+let sdk, account, databases, storage, realtime;
 let currentUser=null, users=[], activeChatUser=null, messages=[];
+let activeConversationId=null, realtimeUnsubscribe=null;
 let signup=false;
 
 const $=id=>document.getElementById(id);
@@ -93,7 +94,10 @@ function avatarHTML(u,cls="avatar"){return `<div class="${cls}">${u?.avatar?`<im
 async function loadSDK(){
  const m=await import("https://cdn.jsdelivr.net/npm/appwrite@21.0.0/+esm");
  sdk=m; const client=new m.Client().setEndpoint(CFG.endpoint).setProject(CFG.projectId);
- account=new m.Account(client); databases=new m.Databases(client); storage=new m.Storage(client);
+ account=new m.Account(client);
+ databases=new m.Databases(client);
+ storage=new m.Storage(client);
+ realtime=new m.Realtime(client);
 }
 
 async function getSession(){
@@ -163,16 +167,112 @@ async function boot(){
  const me=users.find(u=>u.userId===currentUser.$id);
  if(me){$("profileName").textContent=me.displayName;$("profileBio").textContent=me.bio||"";$("profileAvatar").innerHTML=me.avatar?`<img src="${esc(me.avatar)}" alt="">`:esc(initials(me.displayName))}
 }
-async function openChat(u){
- if(!u)return;activeChatUser=u;$("chatName").textContent=u.displayName;$("chatAvatar").innerHTML=u.avatar?`<img src="${esc(u.avatar)}" alt="">`:esc(initials(u.displayName));$("chat").classList.add("open");await loadConversationMessages();
+function conversationIdFor(a,b){
+ const x=[String(a),String(b)].sort().join(":");
+ let h=2166136261;
+ for(let i=0;i<x.length;i++){h^=x.charCodeAt(i);h=Math.imul(h,16777619)}
+ return "conv_"+(h>>>0).toString(16).padStart(8,"0");
 }
-async function loadConversationMessages(){ $("chatBody").innerHTML=`<div class="empty">Start a conversation with ${esc(activeChatUser.displayName)}.</div>` }
+async function ensureConversation(otherUserId){
+ const cid=conversationIdFor(currentUser.$id,otherUserId);
+ try{
+  await databases.createDocument(CFG.databaseId,CFG.tables.conversations,cid,{
+   createdAt:new Date().toISOString(),type:"direct",lastMessage:"",lastMessageAt:""
+  });
+ }catch(e){
+  if(!String(e.message||"").toLowerCase().includes("already exists") && !String(e.code||"").includes("409")) console.warn("conversation:",e.message);
+ }
+ for(const uid of [currentUser.$id,otherUserId]){
+  const memberId=conversationIdFor(cid,uid);
+  try{
+   await databases.createDocument(CFG.databaseId,CFG.tables.conversation_members,memberId,{
+    conversationId:cid,userId:uid,joinedAt:new Date().toISOString(),isAdmin:uid===currentUser.$id
+   });
+  }catch(e){
+   if(!String(e.message||"").toLowerCase().includes("already exists") && !String(e.code||"").includes("409")) console.warn("member:",e.message);
+  }
+ }
+ return cid;
+}
+function renderChatMessages(){
+ const body=$("chatBody");
+ if(!messages.length){body.innerHTML=`<div class="empty">Start a conversation with ${esc(activeChatUser.displayName)}.</div>`;return}
+ body.innerHTML=messages.map(m=>{
+  const mine=m.senderId===currentUser.$id;
+  return `<div class="bubble-row ${mine?"me":""}"><div class="bubble">${esc(m.content||"")}</div></div>`;
+ }).join("");
+ body.scrollTop=body.scrollHeight;
+}
+async function loadConversationMessages(){
+ activeConversationId=await ensureConversation(activeChatUser.userId);
+ try{
+  const r=await databases.listDocuments(CFG.databaseId,CFG.tables.messages,[
+   sdk.Query.equal("conversationId",activeConversationId),
+   sdk.Query.orderAsc("createdAt"),
+   sdk.Query.limit(100)
+  ]);
+  messages=r.documents;
+ }catch(e){
+  console.warn("messages read:",e.message);
+  messages=[];
+ }
+ renderChatMessages();
+ subscribeToMessages();
+}
+function subscribeToMessages(){
+ if(realtimeUnsubscribe)try{realtimeUnsubscribe()}catch{}
+ try{
+  realtimeUnsubscribe=realtime.subscribe(
+   [`databases.${CFG.databaseId}.tables.${CFG.tables.messages}.documents`],
+   event=>{
+    const m=event.payload;
+    if(!m || m.conversationId!==activeConversationId)return;
+    const idx=messages.findIndex(x=>x.$id===m.$id);
+    if(event.events.some(x=>x.includes(".delete"))){
+      messages=messages.filter(x=>x.$id!==m.$id);
+    }else if(idx>=0){
+      messages[idx]=m;
+    }else{
+      messages.push(m);
+      messages.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
+    }
+    renderChatMessages();
+   }
+  );
+ }catch(e){console.warn("realtime:",e.message)}
+}
 $("authForm").onsubmit=e=>{e.preventDefault();signup?register():login()};
 $("switchBtn").onclick=()=>{signup=!signup;$("username").classList.toggle("hidden",!signup);$("authBtn").textContent=signup?"Sign up":"Log in";$("switchText").textContent=signup?"Already have an account?":"Don't have an account?";$("switchBtn").textContent=signup?"Log in":"Sign up";$("authMsg").textContent=""};
 document.querySelectorAll(".nav").forEach(b=>b.onclick=()=>setPage(b.dataset.page));
 $("headerAction").onclick=()=>setPage("messages");
-$("closeChat").onclick=()=>$("chat").classList.remove("open");
-$("chatForm").onsubmit=e=>{e.preventDefault();const v=$("chatInput").value.trim();if(!v||!activeChatUser)return;const row=document.createElement("div");row.className="bubble-row me";row.innerHTML=`<div class="bubble">${esc(v)}</div>`;$("chatBody").appendChild(row);$("chatInput").value="";$("chatBody").scrollTop=$("chatBody").scrollHeight};
+$("closeChat").onclick=()=>{
+ $("chat").classList.remove("open");
+ if(realtimeUnsubscribe){try{realtimeUnsubscribe()}catch{}realtimeUnsubscribe=null}
+ activeConversationId=null;messages=[];
+};
+$("chatForm").onsubmit=async e=>{
+ e.preventDefault();
+ const v=$("chatInput").value.trim();
+ if(!v||!activeChatUser||!currentUser)return;
+ const btn=$("chatForm").querySelector(".send");
+ btn.disabled=true;
+ try{
+  if(!activeConversationId)activeConversationId=await ensureConversation(activeChatUser.userId);
+  await databases.createDocument(CFG.databaseId,CFG.tables.messages,sdk.ID.unique(),{
+   conversationId:activeConversationId,
+   senderId:currentUser.$id,
+   content:v,
+   media:"",
+   mediaType:"",
+   replyTo:"",
+   createdAt:new Date().toISOString(),
+   deleted:false
+  });
+  $("chatInput").value="";
+ }catch(err){
+  alert("Message could not be sent: "+err.message);
+ }finally{btn.disabled=false}
+};
 
 (async()=>{try{await loadSDK();if(await getSession())await boot()}catch(e){$("authMsg").textContent="Appwrite connection error: "+e.message}})();
 </script>
