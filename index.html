@@ -28,6 +28,7 @@ button,input,textarea{font:inherit}button{border:0;color:inherit;background:none
 .toast{position:fixed;z-index:200;left:50%;bottom:25px;transform:translateX(-50%);background:#fff;color:#111;padding:11px 16px;border-radius:13px;font-size:13px;box-shadow:0 10px 40px #0008}.mobile-nav{display:none}
 @media(max-width:900px){.layout{grid-template-columns:70px minmax(0,620px);justify-content:center}.side .label,.side .badge{display:none}.navbtn{justify-content:center}.right-side{display:none}}
 @media(max-width:680px){.top{height:58px}.layout{display:block;padding:10px 8px 82px}.left-side{display:none}.mobile-nav{position:fixed;display:flex;z-index:40;bottom:0;left:0;right:0;height:64px;background:#08080aee;backdrop-filter:blur(18px);border-top:1px solid var(--line);justify-content:space-around;padding-bottom:env(safe-area-inset-bottom)}.mobile-nav .icon{width:48px}.card{border-radius:17px}.post-media{max-height:500px}.chat-shell{height:calc(100dvh - 68px)}}
+#ownerDashboard{max-width:900px;margin:0 auto;padding:16px}#ownerDashboard input{padding:10px;border-radius:10px;border:1px solid #ccc}
 </style>
 </head>
 <body>
@@ -150,7 +151,7 @@ function authView(mode="login"){
 
 async function boot(){
  try{me=await account.get()}catch{authView();return}
- await ensureProfile(); await refreshProfiles(); renderShell(); await loadFeed(); subscribeAll();
+ await ensureProfile(); await refreshProfiles(); renderShell(); if(isOwnerAccount()){ const b=document.getElementById("ownerNavBtn"); if(b) b.style.display=""; } await loadFeed(); subscribeAll();
 }
 
 function renderShell(){
@@ -165,6 +166,26 @@ function renderShell(){
    ${nav()}
   </aside>
   <main id="main"></main>
+<main id="ownerDashboard" style="display:none">
+  <section class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <h2 style="margin:0">👑 Owner Dashboard</h2>
+        <p style="margin:6px 0 0;opacity:.7">NOVA Social administration</p>
+      </div>
+      <button onclick="closeOwnerDashboard()">Back</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <input id="ownerUserSearch" placeholder="Search users..." style="flex:1;min-width:180px">
+      <button onclick="ownerLoadUsers()">Refresh</button>
+    </div>
+    <div id="ownerUsersList">Loading users...</div>
+  </section>
+</main>
+
   <aside class="side right-side"><div class="card"><div class="card-pad"><b>People on NOVA</b><div id="peopleSide"></div></div></div></aside>
  </div>
  <nav class="mobile-nav">
@@ -288,7 +309,7 @@ async function renderProfile(uid){
  $("#main").innerHTML=`<div class="card"><div class="profile-cover"></div><div class="profile-main">${avatar(p,"profile-avatar")}
  <div class="profile-name">${esc(p.displayName||p.username)} ${p.verified?'✓':''}</div><div style="color:#888">@${esc(p.username)}</div><div class="profile-bio">${esc(p.bio||"")}</div>
  <div class="stats"><div><b>${followers.length}</b><span>Followers</span></div><div><b>${following.length}</b><span>Following</span></div></div>
- <div class="profile-actions">${own?`<button onclick="editProfile()">Edit profile</button><button onclick="logout()">Log out</button>`:`<button class="primary-small" onclick="toggleFollow('${uid}',this)">Follow</button><button onclick="showPage('chat','${uid}')">Message</button>`}</div>
+ <div class="profile-actions">${own?`<button onclick="editProfile()">Edit profile</button>`:`<button class="primary-small" onclick="toggleFollow('${uid}',this)">Follow</button><button onclick="showPage('chat','${uid}')">Message</button>`}</div>
  </div></div><div class="section-title">Posts</div><div id="profilePosts"></div>`;
  const posts=await list(T.posts,[Query.equal("userId",uid),Query.orderDesc("$createdAt"),Query.limit(50)]).catch(()=>[]);
  $("#profilePosts").innerHTML=posts.length?posts.map(renderPost).join(""):`<div class="card empty">No posts.</div>`;
@@ -386,6 +407,130 @@ async function subscribeAll(){
   subscriptions.push(s);
  }catch(e){console.warn("Realtime subscription unavailable",e)}
 }
+
+const NOVA_OWNER_ID = "Carlos-2839";
+let ownerDashboardOpen = false;
+let ownerUsersCache = [];
+
+function isOwnerAccount(){
+  return !!me && (
+    me.$id === NOVA_OWNER_ID ||
+    me.email === "owner@nova.local"
+  );
+}
+
+function openOwnerDashboard(){
+  if(!isOwnerAccount()){
+    alert("Owner access only");
+    return;
+  }
+  ownerDashboardOpen = true;
+  const main = document.getElementById("main");
+  const dash = document.getElementById("ownerDashboard");
+  if(main) main.style.display = "none";
+  if(dash) dash.style.display = "";
+  const btn = document.getElementById("ownerNavBtn");
+  if(btn) btn.style.display = "";
+  ownerLoadUsers();
+}
+
+function closeOwnerDashboard(){
+  ownerDashboardOpen = false;
+  const dash = document.getElementById("ownerDashboard");
+  const main = document.getElementById("main");
+  if(dash) dash.style.display = "none";
+  if(main) main.style.display = "";
+}
+
+async function ownerCall(action, extra={}){
+  const endpoint = "https://6aa476550001ca179b26.fra.appwrite.run/";
+  if(!endpoint) throw new Error("Owner Function URL is not configured.");
+  const res = await fetch(endpoint, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ownerId:NOVA_OWNER_ID, action, ...extra})
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.message || data.error || "Owner Function error");
+  return data;
+}
+
+async function ownerLoadUsers(){
+  const box = document.getElementById("ownerUsersList");
+  if(!box) return;
+  box.innerHTML = "Loading users...";
+  try{
+    const data = await ownerCall("listUsers");
+    ownerUsersCache = data.users || data.usersList || data || [];
+    ownerRenderUsers();
+  }catch(e){
+    box.innerHTML = `<div style="color:#d00">Could not load users: ${String(e.message||e)}</div>`;
+  }
+}
+
+function ownerRenderUsers(){
+  const box = document.getElementById("ownerUsersList");
+  const q = (document.getElementById("ownerUserSearch")?.value || "").toLowerCase().trim();
+  const users = ownerUsersCache.filter(u=>{
+    const s = `${u.name||""} ${u.email||""} ${u.$id||""}`.toLowerCase();
+    return !q || s.includes(q);
+  });
+  if(!users.length){
+    box.innerHTML = `<div style="opacity:.7">No users found.</div>`;
+    return;
+  }
+  box.innerHTML = users.map(u=>`
+    <div style="padding:12px 0;border-bottom:1px solid #ddd;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700">${escapeHtml(u.name||"No name")}</div>
+        <div style="font-size:13px;opacity:.7">${escapeHtml(u.email||"")} · ${escapeHtml(u.$id||"")}</div>
+        <div style="font-size:12px;margin-top:4px">Status: ${u.status===false ? "Disabled" : "Active"}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="ownerVerify('${escapeAttr(u.$id)}')">Verify</button>
+        <button onclick="ownerToggleStatus('${escapeAttr(u.$id)}',${u.status===false})">${u.status===false?"Enable":"Disable"}</button>
+        <button onclick="ownerDelete('${escapeAttr(u.$id)}')" style="color:#c00">Delete</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function escapeHtml(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function escapeAttr(v){ return escapeHtml(v).replace(/`/g,"&#96;"); }
+
+async function ownerVerify(userId){
+  try{
+    await ownerCall("verifyUser",{userId});
+    alert("User verified.");
+    ownerLoadUsers();
+  }catch(e){ alert(e.message||e); }
+}
+
+async function ownerToggleStatus(userId, enable){
+  try{
+    await ownerCall("setUserStatus",{userId,status:enable});
+    ownerLoadUsers();
+  }catch(e){ alert(e.message||e); }
+}
+
+async function ownerDelete(userId){
+  if(userId===NOVA_OWNER_ID){
+    alert("Owner cannot be deleted.");
+    return;
+  }
+  if(!confirm("Delete this user?")) return;
+  try{
+    await ownerCall("deleteUser",{userId});
+    ownerLoadUsers();
+  }catch(e){ alert(e.message||e); }
+}
+
+document.addEventListener("input", e=>{
+  if(e.target && e.target.id==="ownerUserSearch") ownerRenderUsers();
+});
+
 async function logout(){try{await account.deleteSession({sessionId:"current"});location.reload()}catch(e){err(e)}}
 
 window.showPage=showPage;window.renderProfile=renderProfile;window.deletePost=deletePost;window.reactPost=reactPost;window.commentPost=commentPost;window.sharePost=sharePost;window.toggleFollow=toggleFollow;window.editProfile=editProfile;window.sendText=sendText;window.sendMedia=sendMedia;window.toggleVoice=toggleVoice;window.logout=logout;window.createPost=createPost;window.createStory=createStory;
