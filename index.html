@@ -288,7 +288,7 @@ async function renderProfile(uid){
  $("#main").innerHTML=`<div class="card"><div class="profile-cover"></div><div class="profile-main">${avatar(p,"profile-avatar")}
  <div class="profile-name">${esc(p.displayName||p.username)} ${p.verified?'✓':''}</div><div style="color:#888">@${esc(p.username)}</div><div class="profile-bio">${esc(p.bio||"")}</div>
  <div class="stats"><div><b>${followers.length}</b><span>Followers</span></div><div><b>${following.length}</b><span>Following</span></div></div>
- <div class="profile-actions">${own?`<button onclick="editProfile()">Edit profile</button>`:`<button class="primary-small" onclick="toggleFollow('${uid}',this)">Follow</button><button onclick="showPage('chat','${uid}')">Message</button>`}</div>
+ <div class="profile-actions">${own?`<button onclick="editProfile()">Edit profile</button><button onclick="logout()">Log out</button>`:`<button class="primary-small" onclick="toggleFollow('${uid}',this)">Follow</button><button onclick="showPage('chat','${uid}')">Message</button>`}</div>
  </div></div><div class="section-title">Posts</div><div id="profilePosts"></div>`;
  const posts=await list(T.posts,[Query.equal("userId",uid),Query.orderDesc("$createdAt"),Query.limit(50)]).catch(()=>[]);
  $("#profilePosts").innerHTML=posts.length?posts.map(renderPost).join(""):`<div class="card empty">No posts.</div>`;
