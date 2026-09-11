@@ -159,6 +159,7 @@ function renderShell(){
  <button class="icon" title="Search" onclick="showPage('search')">${svg("search")}</button>
  <button class="icon" title="Notifications" onclick="showPage('notifications')">${svg("bell")}</button>
  <button class="icon" title="Profile" onclick="showPage('profile')">${svg("user")}</button>
+   <button id="ownerTopBtn" class="icon" style="display:none" title="Owner" onclick="openOwnerDashboard()">👑</button>
  </div></header>
  <div class="layout">
   <aside class="side left-side">
@@ -190,6 +191,7 @@ function renderShell(){
   <button class="icon" onclick="showPage('create')">${svg("plus")}</button>
   <button class="icon" onclick="showPage('messages')">${svg("send")}</button>
   <button class="icon" onclick="showPage('profile')">${svg("user")}</button>
+   <button class="icon" onclick="logout()" title="Log out">${svg("more")}</button>
  </nav>
  </div>`;
  renderPeopleSide();
@@ -200,6 +202,7 @@ function nav(){return `<button class="navbtn active" data-page="home" onclick="s
 <button class="navbtn" onclick="showPage('messages')">${svg("send")}<span class="label">Messages</span></button>
 <button class="navbtn" onclick="showPage('notifications')">${svg("bell")}<span class="label">Notifications</span></button>
 <button class="navbtn" onclick="showPage('profile')">${svg("user")}<span class="label">Profile</span></button>
+ <button id="ownerNavBtn" class="navbtn" style="display:none" onclick="openOwnerDashboard()">👑<span class="label">Owner</span></button>
 <button class="navbtn" onclick="logout()">${svg("more")}<span class="label">Log out</span></button>`}
 
 async function showPage(page,arg=null){
@@ -403,66 +406,50 @@ async function subscribeAll(){
   subscriptions.push(s);
  }catch(e){console.warn("Realtime subscription unavailable",e)}
 }
+const NOVA_OWNER_FUNCTION_URL = "https://6aa476550001ca179b26.fra.appwrite.run/";
 
 const NOVA_OWNER_CODE = "Carlos-2839";
 const NOVA_OWNER_FUNCTION_URL = "https://6aa476550001ca179b26.fra.appwrite.run/";
 let ownerUsersCache = [];
 
 function isOwnerAccount(){
-  return !!me && (me.prefs?.ownerCode === NOVA_OWNER_CODE || me.name === "NOVA Owner");
+  return !!me && me.prefs?.ownerCode === NOVA_OWNER_CODE;
 }
-
 function openOwnerDashboard(){
-  if(!isOwnerAccount()){ alert("Owner access only"); return; }
-  $("#main").style.display="none";
-  $("#ownerDashboard").style.display="";
+  if(!isOwnerAccount()){alert("Owner access only");return;}
+  const m=document.getElementById("main"),d=document.getElementById("ownerDashboard");
+  if(m)m.style.display="none"; if(d)d.style.display="";
   ownerLoadUsers();
 }
 function closeOwnerDashboard(){
-  $("#ownerDashboard").style.display="none";
-  $("#main").style.display="";
+  const d=document.getElementById("ownerDashboard"),m=document.getElementById("main");
+  if(d)d.style.display="none"; if(m)m.style.display="";
 }
-async function ownerCall(action, extra={}){
-  const r=await fetch(NOVA_OWNER_FUNCTION_URL,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ownerId:NOVA_OWNER_CODE,action,...extra})
-  });
+async function ownerCall(action,extra={}){
+  const r=await fetch(NOVA_OWNER_FUNCTION_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ownerId:NOVA_OWNER_CODE,action,...extra})});
   const d=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(d.message||d.error||"Owner Function error");
+  if(!r.ok)throw new Error(d.message||d.error||"Owner Function error");
   return d;
 }
 async function ownerLoadUsers(){
-  const box=$("#ownerUsersList"); if(!box)return;
+  const box=document.getElementById("ownerUsersList");if(!box)return;
   box.innerHTML="Loading users...";
-  try{
-    const d=await ownerCall("listUsers");
-    ownerUsersCache=d.users||[];
-    ownerRenderUsers();
-  }catch(e){box.innerHTML=`<div style="color:#c00">${esc(e.message||e)}</div>`}
+  try{const d=await ownerCall("listUsers");ownerUsersCache=d.users||[];ownerRenderUsers();}
+  catch(e){box.innerHTML=`<div style="color:#c00">${esc(e.message||e)}</div>`}
 }
 function ownerRenderUsers(){
-  const box=$("#ownerUsersList");
-  const q=($("#ownerUserSearch")?.value||"").toLowerCase();
+  const box=document.getElementById("ownerUsersList"),q=(document.getElementById("ownerUserSearch")?.value||"").toLowerCase();
   const users=ownerUsersCache.filter(u=>`${u.name||""} ${u.email||""} ${u.$id||""}`.toLowerCase().includes(q));
-  box.innerHTML=users.length?users.map(u=>`
-    <div style="padding:12px 0;border-bottom:1px solid #ddd">
-      <b>${esc(u.name||"No name")}</b><br>
-      <small>${esc(u.email||"")} · ${esc(u.$id||"")}</small>
-      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="ownerVerify('${esc(u.$id)}')">Verify</button>
-        <button onclick="ownerStatus('${esc(u.$id)}',${u.status===false})">${u.status===false?"Enable":"Disable"}</button>
-        <button onclick="ownerDelete('${esc(u.$id)}')">Delete</button>
-      </div>
-    </div>`).join(""):"No users found.";
+  box.innerHTML=users.length?users.map(u=>`<div style="padding:12px 0;border-bottom:1px solid #ddd"><b>${esc(u.name||"No name")}</b><br><small>${esc(u.email||"")} · ${esc(u.$id||"")}</small><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button onclick="ownerVerify('${esc(u.$id)}')">Verify</button><button onclick="ownerStatus('${esc(u.$id)}',${u.status===false})">${u.status===false?"Enable":"Disable"}</button><button onclick="ownerDelete('${esc(u.$id)}')">Delete</button></div></div>`).join(""):"No users found.";
 }
 async function ownerVerify(id){try{await ownerCall("verifyUser",{userId:id});await ownerLoadUsers()}catch(e){alert(e.message)}}
 async function ownerStatus(id,status){try{await ownerCall("setUserStatus",{userId:id,status});await ownerLoadUsers()}catch(e){alert(e.message)}}
 async function ownerDelete(id){if(!confirm("Delete this user?"))return;try{await ownerCall("deleteUser",{userId:id});await ownerLoadUsers()}catch(e){alert(e.message)}}
+document.addEventListener("input",e=>{if(e.target.id==="ownerUserSearch")ownerRenderUsers()});
 
 async function logout(){try{await account.deleteSession({sessionId:"current"});location.reload()}catch(e){err(e)}}
 
-window.showPage=showPage;window.renderProfile=renderProfile;window.deletePost=deletePost;window.reactPost=reactPost;window.commentPost=commentPost;window.sharePost=sharePost;window.toggleFollow=toggleFollow;window.editProfile=editProfile;window.sendText=sendText;window.sendMedia=sendMedia;window.toggleVoice=toggleVoice;window.logout=logout;window.createPost=createPost;window.createStory=createStory;
+window.openOwnerDashboard=openOwnerDashboard;window.closeOwnerDashboard=closeOwnerDashboard;window.showPage=showPage;window.renderProfile=renderProfile;window.deletePost=deletePost;window.reactPost=reactPost;window.commentPost=commentPost;window.sharePost=sharePost;window.toggleFollow=toggleFollow;window.editProfile=editProfile;window.sendText=sendText;window.sendMedia=sendMedia;window.toggleVoice=toggleVoice;window.logout=logout;window.createPost=createPost;window.createStory=createStory;
 
 boot();
 })();
