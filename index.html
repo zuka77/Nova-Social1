@@ -5702,6 +5702,37 @@ async function novaEnsureOwnerSecret(){
   */
 })();
 
+
+
+/* ============================================================
+   NOVA FINAL BOOT FIX
+   The application must render even when no Appwrite session exists.
+   ============================================================ */
+(async function novaBoot(){
+  try {
+    const user = await currentUser();
+    if (user) {
+      state.user = user;
+      state.profile = await ensureProfile(user);
+      state.route = "home";
+      state.routeArg = null;
+      try { await setPresence(true); } catch(e) {}
+      try { await novaUpdateNotificationBadge(); } catch(e) {}
+      try { await novaInitRealtime(); } catch(e) {}
+      await renderShell();
+    } else {
+      state.user = null;
+      renderAuth("login");
+    }
+  } catch (e) {
+    console.error("NOVA boot error:", e);
+    try { renderAuth("login"); } catch (x) {
+      const app = document.getElementById("app");
+      if (app) app.innerHTML = `<div style="padding:30px;color:white;font-family:system-ui"><h2>NOVA</h2><p>Unable to start the app.</p><p style="opacity:.6">${escapeHtml(e?.message || "Unknown error")}</p></div>`;
+    }
+  }
+})();
+
 </script>
 </body>
 </html>
