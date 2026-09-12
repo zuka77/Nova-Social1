@@ -776,6 +776,18 @@ function renderAuth(mode=state.authMode){
   $("authForm").onsubmit=submitAuth;
 }
 
+async function bootAuthenticated(){
+  const user=await account.get();
+  state.user=user;
+  state.profile=await ensureProfile(user);
+  state.route=state.route||"home";
+  state.routeArg=state.routeArg||null;
+  try{await setPresence(true);}catch(e){}
+  try{if(typeof window.novaUpdateNotificationBadge==="function") await window.novaUpdateNotificationBadge();}catch(e){}
+  try{if(typeof window.novaInitRealtime==="function") await window.novaInitRealtime();}catch(e){}
+  await renderShell();
+}
+
 async function submitAuth(e){
   e.preventDefault();
   const error=$("authError");
@@ -837,7 +849,11 @@ async function logout(){
 function routeTo(route,arg=""){
   state.route=route;
   state.routeArg=arg;
-  renderShell();
+  Promise.resolve(renderShell()).catch(err=>{
+    console.error("NOVA route error:",err);
+    const app=$("app");
+    if(app) app.innerHTML=`<div style="padding:24px;color:#fff;font-family:system-ui"><h3>NOVA</h3><p style="color:#ff6b6b">Page could not be opened.</p><p style="opacity:.65;font-size:12px">${escapeHtml(err?.message||"Unknown error")}</p></div>`;
+  });
 }
 
 function topbar(title="",actions=""){
@@ -885,21 +901,45 @@ async function renderShell(){
   $("app").innerHTML=`<div id="shell"></div>`;
   const shell=$("shell");
 
+  /* Notifications is supplied by the completed Part 05 module.
+     Render into a dedicated mount so the bottom navigation remains alive. */
+  if(state.route==="notifications"){
+    shell.innerHTML=`<div id="notificationsView"></div>${bottomNav()}`;
+    bindGlobalInteractions();
+    if(typeof window.novaRenderNotificationsPage==="function"){
+      await window.novaRenderNotificationsPage();
+    }else{
+      $("notificationsView").innerHTML=`<div class="empty-state"><h3>Activity unavailable</h3><p>The notification module did not initialize.</p></div>`;
+    }
+    return;
+  }
+
+  /* Chat has its own renderer and must not return undefined into innerHTML.
+     Give it a mount point and let the Messenger module populate it. */
+  if(state.route==="chat"){
+    shell.innerHTML=`<div id="chatRouteView"></div>${bottomNav()}`;
+    bindGlobalInteractions();
+    if(typeof window.renderChat==="function"){
+      await window.renderChat(state.routeArg);
+    }else{
+      $("chatRouteView").innerHTML=`<div class="empty-state"><h3>Messenger unavailable</h3><p>The Messenger module did not initialize.</p></div>`;
+    }
+    return;
+  }
+
   let content="";
   if(state.route==="home")content=await renderHome();
   else if(state.route==="search")content=await renderSearch();
   else if(state.route==="create")content=await renderCreate();
-  else if(state.route==="notifications")content=await renderNotifications();
   else if(state.route==="profile")content=await renderProfile(state.routeArg||uid());
   else if(state.route==="followers")content=await renderPeopleList(state.routeArg,"followers");
   else if(state.route==="following")content=await renderPeopleList(state.routeArg,"following");
   else if(state.route==="messages")content=await renderMessages();
-  else if(state.route==="chat")content=await renderChat(state.routeArg);
   else if(state.route==="post")content=await renderPostPage(state.routeArg);
   else if(state.route==="owner")content=await renderOwner();
   else content=await renderHome();
 
-  shell.innerHTML=content+bottomNav();
+  shell.innerHTML=(content||"")+bottomNav();
   bindGlobalInteractions();
 }
 
@@ -4040,6 +4080,7 @@ window.openUserActions=openUserActions;
     if (!profile) profile = await novaOtherMember(conversationId);
 
     const root =
+      document.querySelector("#chatRouteView") ||
       document.querySelector("#messagesView") ||
       document.querySelector("#app") ||
       document.body;
@@ -4074,13 +4115,13 @@ window.openUserActions=openUserActions;
       state.currentConversationId = null;
       state.replyToMessage = null;
 
-      if (typeof renderMessages === "function") {
-        try { await renderMessages(); return; } catch (_) {}
-      }
-
-      if (typeof renderHome === "function") {
-        try { await renderHome(); } catch (_) {}
-      }
+      try {
+        state.route="messages";
+        state.routeArg=null;
+        await renderShell();
+        return;
+      } catch (_) {}
+      try { await renderHome(); } catch (_) {}
     });
 
     document.querySelector("#novaChatProfile")?.addEventListener("click", () => {
